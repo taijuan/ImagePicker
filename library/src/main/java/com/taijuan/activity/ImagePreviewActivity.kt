@@ -97,7 +97,7 @@ class ImagePreviewActivity : BaseActivity(), View.OnClickListener, OnPhotoTapLis
             val index = data.indexOf(data[current])
             previewAdapter.current = if (index >= 0) data[index] else null
             if (index >= 0) {
-                rv_small.smoothScrollToPosition(index)
+                rv_small.scrollToPosition(index)
             }
         } else {
             rv_small.visibility = View.GONE

@@ -1,0 +1,7 @@
+subprojects { project ->
+    if (project.name == "app") {
+        return
+    }
+    apply plugin: 'com.github.dcendents.android-maven'
+    group = 'com.github.taijuan'
+}
