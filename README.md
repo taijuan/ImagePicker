@@ -1,18 +1,18 @@
 # ImagePikcer[![](https://www.jitpack.io/v/taijuan/ImagePikcer.svg)](https://www.jitpack.io/#taijuan/ImagePikcer)
 
-Add it in your root build.gradle at the end of repositories:
-
+##集成
+####1. 添加maven:
     allprojects {
 	    repositories {
 	        maven { url 'https://www.jitpack.io' }
 	    }
 	}
-
-Step 2. Add the dependency
-
+####2. module添加引用
 	dependencies {
 	    implementation 'com.github.taijuan:ImagePikcer:1.0.0'
 	}
+![截图-1](images/screenshots-1.png)
+
 	
 
 
