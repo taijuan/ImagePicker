@@ -11,11 +11,5 @@
 	dependencies {
 	    implementation 'com.github.taijuan:ImagePikcer:1.0.0'
 	}
-![截图-1](/images/screenshots-1.png)
-![截图-1](/images/screenshots-1.png)
-
 	
-
-
-
-             
+<img src="./images/screenshots-1.png" width = "300" alt="截图-1" align=center /><img src="./images/screenshots-1.png" width = "300" alt="截图-2lll" align=center />
