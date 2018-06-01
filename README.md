@@ -9,7 +9,7 @@
 	}
 #### 2. module添加引用
 	dependencies {
-	    implementation 'com.github.taijuan:ImagePikcer:1.0.0'
+	    implementation 'com.github.taijuan:ImagePikcer:1.0.1'
 	}
 ## 截图
 <img src="./images/screenshots-1.png" width = "50%" alt="截图-1" align=center /><img src="./images/screenshots-2.png" width = "50%" alt="截图-2" align=center />
