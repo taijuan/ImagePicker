@@ -35,9 +35,7 @@ class ImageRecyclerAdapter(private val activity: Activity, var images: ArrayList
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return if (viewType == ITEM_TYPE_CAMERA) {
-            CameraViewHolder(parent)
-        } else ImageViewHolder(parent)
+        return if (viewType == ITEM_TYPE_CAMERA) CameraViewHolder(parent) else ImageViewHolder(parent)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -93,7 +91,7 @@ class ImageRecyclerAdapter(private val activity: Activity, var images: ArrayList
                         itemView.cb_check.isChecked = true
                     }
                     else -> {
-                        Toast.makeText(activity.applicationContext, activity.getString(R.string.ip_select_limit, pickHelper.limit), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(activity.applicationContext, activity.getString(R.string.picker_select_limit, pickHelper.limit), Toast.LENGTH_SHORT).show()
                         itemView.cb_check.isChecked = false
                     }
                 }

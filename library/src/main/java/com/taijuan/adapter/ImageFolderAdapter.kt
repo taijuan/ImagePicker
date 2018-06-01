@@ -1,7 +1,6 @@
 package com.taijuan.adapter
 
 import android.app.Activity
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,70 +10,47 @@ import android.widget.TextView
 import com.taijuan.ImagePicker
 import com.taijuan.data.ImageFolder
 import com.taijuan.library.R
-import com.taijuan.utils.getImageItemWidth
-import java.util.*
+import kotlinx.android.synthetic.main.adapter_folder_list_item.view.*
 
-class ImageFolderAdapter(private val mActivity: Activity, folders: MutableList<ImageFolder>?) : BaseAdapter() {
-    private val mInflater: LayoutInflater
-    private val mImageSize: Int
-    private var imageFolders: MutableList<ImageFolder>? = null
-    var selectIndex = 0
-        set(i) {
-            if (selectIndex != i) {
-                field = i
-                notifyDataSetChanged()
-            }
-        }
+class ImageFolderAdapter(private val activity: Activity, private val folders: ArrayList<ImageFolder> = arrayListOf(), private val selectIndex: Int = 0) : BaseAdapter() {
 
-    init {
-        imageFolders = if (folders != null && folders.size > 0) folders else ArrayList()
-        mImageSize = getImageItemWidth(mActivity)
-        mInflater = mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-    }
+    override fun getCount(): Int = folders.size
 
-    fun refreshData(folders: MutableList<ImageFolder>?) {
-        if (folders != null && folders.size > 0) imageFolders = folders
-        else imageFolders?.clear()
-        notifyDataSetChanged()
-    }
-
-    override fun getCount(): Int = imageFolders?.size ?: 0
-
-    override fun getItem(position: Int): ImageFolder = imageFolders!![position]
+    override fun getItem(position: Int): ImageFolder = folders[position]
 
     override fun getItemId(position: Int): Long = position.toLong()
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        var view = convertView
-        val holder: ViewHolder
-        if (view == null) {
-            view = mInflater.inflate(R.layout.adapter_folder_list_item, parent, false)
-            holder = ViewHolder(view)
+        val holder = if (convertView == null) {
+            ViewHolder(parent)
         } else {
-            holder = view.tag as ViewHolder
+            convertView.tag as ViewHolder
         }
-
         val item = getItem(position)
         holder.folderName.text = item.name
-        holder.imageCount.text = mActivity.getString(R.string.ip_folder_image_count, item.images.size)
-        ImagePicker.imageLoader.displayImage(mActivity, item.cover?.path, holder.cover, mImageSize, mImageSize)
+        holder.imageCount.text = activity.getString(R.string.picker_folder_image_count, item.images.size)
+        ImagePicker.imageLoader.displayImage(activity, item.cover?.path, holder.cover, holder.cover.measuredWidth, holder.cover.measuredHeight)
         if (selectIndex == position) {
             holder.folderCheck.visibility = View.VISIBLE
         } else {
             holder.folderCheck.visibility = View.INVISIBLE
         }
-
-        return view!!
+        return holder.contentView
     }
 
-    private inner class ViewHolder(view: View) {
-        internal var cover: ImageView = view.findViewById(R.id.iv_cover) as ImageView
-        internal var folderName: TextView = view.findViewById(R.id.tv_folder_name) as TextView
-        internal var imageCount: TextView = view.findViewById(R.id.tv_image_count) as TextView
-        internal var folderCheck: ImageView = view.findViewById(R.id.iv_folder_check) as ImageView
+    private inner class ViewHolder(parent: ViewGroup) {
+        internal var contentView: View = LayoutInflater.from(parent.context).inflate(R.layout.adapter_folder_list_item, parent, false)
+        internal var cover: ImageView
+        internal var folderName: TextView
+        internal var imageCount: TextView
+        internal var folderCheck: ImageView
 
         init {
-            view.tag = this
+            contentView.tag = this
+            cover = contentView.iv_cover
+            folderName = contentView.tv_folder_name
+            imageCount = contentView.tv_image_count
+            folderCheck = contentView.iv_folder_check
         }
     }
 }

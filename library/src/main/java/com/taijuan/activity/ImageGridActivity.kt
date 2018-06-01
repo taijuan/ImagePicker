@@ -9,7 +9,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v7.widget.GridLayoutManager
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.AdapterView
@@ -48,10 +47,9 @@ class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDataSource.
     private val imageDataSource = ImageDataSource(this)
     private lateinit var adapter: ImageRecyclerAdapter
     private lateinit var mFolderPopupWindow: FolderPopUpWindow
-    private lateinit var mImageFolderAdapter: ImageFolderAdapter
-    private lateinit var imageFolders: List<ImageFolder>
+    private var imageFolders: ArrayList<ImageFolder> = arrayListOf()
     private lateinit var takeImageFile: File
-
+    private var index: Int = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_grid)
@@ -59,13 +57,12 @@ class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDataSource.
             onCameraClick()
         }
         initView()
-        initPopWindow()
         loadData()
     }
 
     private fun loadData() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), REQUEST_PERMISSION_STORAGE)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE), REQUEST_PERMISSION_STORAGE)
         } else {
             imageDataSource.loadImage(this)
         }
@@ -84,6 +81,7 @@ class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDataSource.
         tv_dir.setOnClickListener(this)
         recyclerView.layoutManager = GridLayoutManager(this, 3)
         adapter = ImageRecyclerAdapter(this)
+        recyclerView.adapter = adapter
         adapter.listener = this
         if (ImagePicker.pickHelper.isMultiMode) {
             btn_ok.visibility = View.VISIBLE
@@ -94,48 +92,35 @@ class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDataSource.
         }
     }
 
-    private fun initPopWindow() {
-        mImageFolderAdapter = ImageFolderAdapter(this, null)
-        mFolderPopupWindow = FolderPopUpWindow(this, mImageFolderAdapter)
+    private fun showPopupFolderList() {
+        mFolderPopupWindow = FolderPopUpWindow(this, ImageFolderAdapter(this, imageFolders, index))
         mFolderPopupWindow.setOnItemClickListener(object : FolderPopUpWindow.OnItemClickListener {
             override fun onItemClick(adapterView: AdapterView<*>, view: View, position: Int, l: Long) {
-                mImageFolderAdapter.selectIndex = position
+                this@ImageGridActivity.index = position
                 mFolderPopupWindow.dismiss()
                 val imageFolder = adapterView.adapter?.getItem(position) as ImageFolder
                 adapter.refreshData(imageFolder.images)
                 tv_dir.text = imageFolder.name
             }
         })
-        footer_bar.post({ mFolderPopupWindow.setMargin(footer_bar.height) })
-    }
-
-    private fun showPopupFolderList() {
-        mImageFolderAdapter.refreshData(imageFolders.toMutableList())  //刷新数据
-        if (mFolderPopupWindow.isShowing) {
-            mFolderPopupWindow.dismiss()
-        } else {
-            mFolderPopupWindow.showAtLocation(footer_bar, Gravity.NO_GRAVITY, 0, 0)
-            //默认选择当前选择的上一个，当目录很多时，直接定位到已选中的条目
-            var index = mImageFolderAdapter.selectIndex
-            index = if (index == 0) index else index - 1
-            mFolderPopupWindow.setSelection(index)
-        }
+        mFolderPopupWindow.showAtLocation(window.decorView, Gravity.BOTTOM, 0, 0)
+        mFolderPopupWindow.setSelection(this.index)
     }
 
     override fun onCheckChanged(selected: Int, limit: Int) {
         if (selected == 0) {
             btn_ok.isEnabled = false
-            btn_ok.text = getString(R.string.ip_complete)
+            btn_ok.text = getString(R.string.picker_complete)
             btn_ok.setTextColor(color(R.color.ip_text_secondary_inverted))
             btn_preview.isEnabled = false
-            btn_preview.text = getString(R.string.ip_preview)
+            btn_preview.text = getString(R.string.picker_preview)
             btn_preview.setTextColor(color(R.color.ip_text_secondary_inverted))
         } else {
             btn_ok.isEnabled = true
-            btn_ok.text = getString(R.string.ip_select_complete, selected, limit)
+            btn_ok.text = getString(R.string.picker_select_complete, selected, limit)
             btn_ok.setTextColor(color(R.color.ip_text_primary_inverted))
             btn_preview.isEnabled = true
-            btn_preview.text = getString(R.string.ip_preview_count, selected)
+            btn_preview.text = getString(R.string.picker_preview_count, selected)
             btn_preview.setTextColor(color(R.color.ip_text_primary_inverted))
         }
     }
@@ -154,13 +139,13 @@ class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDataSource.
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 imageDataSource.loadImage(this)
             } else {
-                showToast("权限被禁止，无法选择本地图片")
+                showToast(getString(R.string.picker_permission_storage))
             }
         } else if (requestCode == REQUEST_PERMISSION_CAMERA) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 takeImageFile = takePicture(this, REQUEST_CAMERA)
             } else {
-                showToast("权限被禁止，无法打开相机")
+                showToast(getString(R.string.picker_permission_camera))
             }
         }
     }
@@ -168,8 +153,6 @@ class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDataSource.
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CAMERA && resultCode == Activity.RESULT_OK) {
-            Log.e("hubert", takeImageFile.absolutePath)
-            //广播通知新增图片
             sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE).also { it.data = Uri.fromFile(takeImageFile) })
             val imageItem = ImageItem().apply {
                 path = takeImageFile.absolutePath
@@ -208,11 +191,11 @@ class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDataSource.
         }
     }
 
-    override fun onImagesLoaded(imageFolders: List<ImageFolder>) {
-        this.imageFolders = imageFolders
-        if (!imageFolders.isEmpty()) {
-            adapter.refreshData(imageFolders[0].images)
-            recyclerView.adapter = adapter
+    override fun onImagesLoaded(imageFolders: ArrayList<ImageFolder>) {
+        this.imageFolders.addAll(imageFolders)
+        if (this.imageFolders.isNotEmpty()) {
+            this.index = 0
+            adapter.refreshData(this.imageFolders[0].images)
         }
     }
 

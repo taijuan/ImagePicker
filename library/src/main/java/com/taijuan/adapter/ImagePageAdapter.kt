@@ -8,27 +8,21 @@ import com.github.chrisbanes.photoview.OnPhotoTapListener
 import com.github.chrisbanes.photoview.PhotoView
 import com.taijuan.ImagePicker
 import com.taijuan.data.ImageItem
-import com.taijuan.utils.getScreenPix
 
 class ImagePageAdapter(
         private val mActivity: Activity,
         private var images: MutableList<ImageItem> = mutableListOf()
 ) : PagerAdapter() {
 
-    private val screenWidth: Int
-    private val screenHeight: Int
-    var listener: OnPhotoTapListener? = null
-
-    init {
-        val dm = getScreenPix(mActivity)
-        screenWidth = dm.widthPixels
-        screenHeight = dm.heightPixels
+    private var listener: OnPhotoTapListener? = null
+    fun setOnPhotoTapListener(listener: OnPhotoTapListener?) {
+        this.listener = listener
     }
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val photoView = PhotoView(mActivity)
         val imageItem = images[position]
-        ImagePicker.imageLoader.displayImagePreview(mActivity, imageItem.path, photoView, screenWidth, screenHeight)
+        ImagePicker.imageLoader.displayImagePreview(mActivity, imageItem.path, photoView, photoView.measuredWidth, photoView.measuredHeight)
         photoView.setOnPhotoTapListener(listener)
         container.addView(photoView)
         return photoView
@@ -41,7 +35,4 @@ class ImagePageAdapter(
     override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
         container.removeView(`object` as View)
     }
-
-    override fun getItemPosition(`object`: Any): Int = PagerAdapter.POSITION_NONE
-
 }

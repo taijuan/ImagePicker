@@ -1,0 +1,14 @@
+<resources>
+    <string name="picker_gallery">Gallery</string>
+    <string name="picker_all_images">All</string>
+    <string name="picker_folder_image_count">%1$d pictures in total</string>
+    <string name="picker_preview_image_count">%1$d/%2$d</string>
+    <string name="picker_select_limit">Choose up to %1$d images</string>
+    <string name="picker_complete">Done</string>
+    <string name="picker_select_complete">Done(%1$d/%2$d)</string>
+    <string name="picker_preview">Preview</string>
+    <string name="picker_preview_count">Preview(%1$d)</string>
+    <string name="picker_photo_crop">Image cropping</string>
+    <string name="picker_permission_storage">Permission is disabled and local images cannot be selected</string>
+    <string name="picker_permission_camera">Permission is denied to open the camera</string>
+</resources>

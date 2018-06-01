@@ -10,6 +10,7 @@ import com.taijuan.data.ImageItem
 import com.taijuan.library.R
 import kotlinx.android.synthetic.main.item_small_preview.view.*
 import java.util.*
+import kotlin.properties.Delegates
 
 /**
  * Created by hubert
@@ -24,7 +25,7 @@ class SmallPreviewAdapter(private val mActivity: Activity, private var images: L
             notifyDataSetChanged()
         }
 
-    var listener: OnItemClickListener? = null
+    var listener: ((imageItem: ImageItem) -> Unit)? = null
 
     override fun getItemCount(): Int = images.size
 
@@ -33,31 +34,24 @@ class SmallPreviewAdapter(private val mActivity: Activity, private var images: L
     }
 
     override fun onBindViewHolder(holder: SmallPreviewViewHolder, position: Int) {
-        holder.bind(position)
+        holder.bind(images[position])
     }
 
     override fun getItemId(position: Int): Long = position.toLong()
 
     inner class SmallPreviewViewHolder(parent: ViewGroup) : RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_small_preview, parent, false)) {
-        private var index: Int = 0
-        private lateinit var data: ImageItem
+        private var data: ImageItem by Delegates.notNull()
 
         init {
             itemView.setOnClickListener {
-                listener?.onItemClick(index, data)
+                listener?.invoke(data)
             }
         }
 
-        fun bind(index: Int) {
-            this.index = index
-            data = images[index]
+        fun bind(data: ImageItem) {
+            this.data = data
             itemView.v_frame.visibility = if (current == data) View.VISIBLE else View.GONE
             ImagePicker.imageLoader.displayImage(mActivity, data.path, itemView.iv_small, itemView.iv_small.width, itemView.iv_small.height)
-
         }
-    }
-
-    interface OnItemClickListener {
-        fun onItemClick(position: Int, imageItem: ImageItem)
     }
 }

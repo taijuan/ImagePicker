@@ -10,7 +10,6 @@ import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.Toast
-import com.github.chrisbanes.photoview.OnOutsidePhotoTapListener
 import com.github.chrisbanes.photoview.OnPhotoTapListener
 import com.taijuan.EXTRA_IMAGE_ITEMS
 import com.taijuan.EXTRA_POSITION
@@ -30,7 +29,7 @@ fun Activity.startForResultImagePreviewActivity(position: Int, data: MutableList
     startActivityForResult(intent, REQUEST_PREVIEW)
 }
 
-class ImagePreviewActivity : BaseActivity(), View.OnClickListener, OnPhotoTapListener, OnOutsidePhotoTapListener {
+class ImagePreviewActivity : BaseActivity(), View.OnClickListener, OnPhotoTapListener {
 
     private var current: Int = 0
     private lateinit var previewAdapter: SmallPreviewAdapter
@@ -42,19 +41,18 @@ class ImagePreviewActivity : BaseActivity(), View.OnClickListener, OnPhotoTapLis
         setContentView(R.layout.activity_image_preview)
         current = intent.getIntExtra(EXTRA_POSITION, 0)
         data = intent.getSerializableExtra(EXTRA_IMAGE_ITEMS) as ArrayList<ImageItem>
-        imagePageAdapter = ImagePageAdapter(this, data)
-        previewAdapter = SmallPreviewAdapter(this, data)
-        btn_back.setOnClickListener { finish() }
-        imagePageAdapter.listener = this
+        imagePageAdapter = ImagePageAdapter(this, data).apply { setOnPhotoTapListener(this@ImagePreviewActivity) }
+        previewAdapter = SmallPreviewAdapter(this, data).apply { listener = { viewpager.setCurrentItem(data.indexOf(it), false) } }
+        btn_back.setOnClickListener(this)
         viewpager.adapter = imagePageAdapter
         btn_ok.setOnClickListener(this)
         bottom_bar.visibility = View.VISIBLE
-        tv_des.text = getString(R.string.ip_preview_image_count, current + 1, data.size)
+        tv_des.text = getString(R.string.picker_preview_image_count, current + 1, data.size)
         viewpager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
             override fun onPageSelected(position: Int) {
                 current = position
                 cb_check.isChecked = contains(data[position])
-                tv_des.text = getString(R.string.ip_preview_image_count, position + 1, data.size)
+                tv_des.text = getString(R.string.picker_preview_image_count, position + 1, data.size)
                 updatePreview()
             }
         })
@@ -74,7 +72,7 @@ class ImagePreviewActivity : BaseActivity(), View.OnClickListener, OnPhotoTapLis
                 }
                 else -> {
                     cb_check.isChecked = false
-                    Toast.makeText(applicationContext, getString(R.string.ip_select_limit, pickHelper.limit), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(applicationContext, getString(R.string.picker_select_limit, pickHelper.limit), Toast.LENGTH_SHORT).show()
                 }
             }
             onCheckChanged()
@@ -82,11 +80,6 @@ class ImagePreviewActivity : BaseActivity(), View.OnClickListener, OnPhotoTapLis
         }
 
         rv_small.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        previewAdapter.listener = object : SmallPreviewAdapter.OnItemClickListener {
-            override fun onItemClick(position: Int, imageItem: ImageItem) {
-                viewpager.setCurrentItem(data.indexOf(imageItem), false)
-            }
-        }
         rv_small.adapter = previewAdapter
         updatePreview()
     }
@@ -108,26 +101,23 @@ class ImagePreviewActivity : BaseActivity(), View.OnClickListener, OnPhotoTapLis
         val selected: Int = pickHelper.selectedImages.size
         if (selected == 0) {
             btn_ok.isEnabled = false
-            btn_ok.text = getString(R.string.ip_complete)
+            btn_ok.text = getString(R.string.picker_complete)
             btn_ok.setTextColor(color(R.color.ip_text_secondary_inverted))
         } else {
             btn_ok.isEnabled = true
-            btn_ok.text = getString(R.string.ip_select_complete, selected, pickHelper.limit)
+            btn_ok.text = getString(R.string.picker_select_complete, selected, pickHelper.limit)
             btn_ok.setTextColor(color(R.color.ip_text_primary_inverted))
         }
     }
 
     override fun onClick(v: View?) {
-        when (v?.id) {
-            R.id.btn_ok -> {
+        when (v) {
+            btn_ok -> {
                 setResult(Activity.RESULT_OK)
                 finish()
             }
+            btn_back -> finish()
         }
-    }
-
-    override fun onOutsidePhotoTap(imageView: ImageView?) {
-        changeTopAndBottomBar()
     }
 
     override fun onPhotoTap(view: ImageView?, x: Float, y: Float) {

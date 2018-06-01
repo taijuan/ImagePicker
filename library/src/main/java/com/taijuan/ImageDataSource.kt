@@ -24,7 +24,7 @@ private val IMAGE_PROJECTION = arrayOf(//查询图片需要的数据列
 class ImageDataSource(private val activity: FragmentActivity) : LoaderManager.LoaderCallbacks<Cursor> {
     private var loadedListener: OnImagesLoadedListener? = null                     //图片加载完成的回调接口
     private val imageFolders = arrayListOf<ImageFolder>()   //所有的图片文件夹
-    private var currentMode: Int? = null
+
 
     fun loadImage(loadedListener: OnImagesLoadedListener) {
         this.loadedListener = loadedListener
@@ -75,7 +75,7 @@ class ImageDataSource(private val activity: FragmentActivity) : LoaderManager.Lo
             }
             if (data.count > 0 && allImages.size > 0) {
                 imageFolders.add(0, ImageFolder().apply {
-                    name = activity.resources.getString(R.string.ip_all_images)
+                    name = activity.resources.getString(R.string.picker_all_images)
                     path = "/"
                     cover = allImages[0]
                     images = allImages
@@ -92,15 +92,13 @@ class ImageDataSource(private val activity: FragmentActivity) : LoaderManager.Lo
     }
 
     fun destroyLoader() {
-        if (currentMode != null) {
-            activity.supportLoaderManager.destroyLoader(1)
-        }
+        activity.supportLoaderManager.destroyLoader(1)
     }
 
     /**
      * 所有图片加载完成的回调接口
      */
     interface OnImagesLoadedListener {
-        fun onImagesLoaded(imageFolders: List<ImageFolder>)
+        fun onImagesLoaded(imageFolders: ArrayList<ImageFolder>)
     }
 }

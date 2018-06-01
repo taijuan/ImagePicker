@@ -30,8 +30,8 @@ class ImageCropActivity : BaseActivity(), View.OnClickListener, CropImageView.On
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_crop)
         btn_back.setOnClickListener(this)
-        tv_des.text = getString(R.string.ip_photo_crop)
-        btn_ok.text = getString(R.string.ip_complete)
+        tv_des.text = getString(R.string.picker_photo_crop)
+        btn_ok.text = getString(R.string.picker_complete)
         btn_ok.setOnClickListener(this)
         cv_crop_image.setOnBitmapSaveCompleteListener(this)
         cv_crop_image.focusStyle = pickHelper.focusStyle

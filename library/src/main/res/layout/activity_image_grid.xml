@@ -51,7 +51,7 @@
                 android:ellipsize="end"
                 android:gravity="center"
                 android:maxLines="1"
-                android:text="@string/ip_all_images"
+                android:text="@string/picker_all_images"
                 android:textColor="#CFCFCF"
                 android:textSize="16sp" />
 

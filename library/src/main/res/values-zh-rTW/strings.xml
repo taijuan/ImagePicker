@@ -1,0 +1,14 @@
+<resources>
+    <string name="picker_gallery">圖庫</string>
+    <string name="picker_all_images">全部</string>
+    <string name="picker_folder_image_count">共%1$d張</string>
+    <string name="picker_preview_image_count">%1$d/%2$d</string>
+    <string name="picker_select_limit">最多選擇%1$d張圖片</string>
+    <string name="picker_complete">完成</string>
+    <string name="picker_select_complete">完成(%1$d/%2$d)</string>
+    <string name="picker_preview">預覽</string>
+    <string name="picker_preview_count">預覽(%1$d)</string>
+    <string name="picker_photo_crop">圖片裁剪</string>
+    <string name="picker_permission_storage">許可權被禁止，無法選擇本地圖片</string>
+    <string name="picker_permission_camera">許可權被禁止，無法打開相機</string>
+</resources>

@@ -37,15 +37,6 @@ internal fun existSDCard(): Boolean {
 }
 
 /**
- * 获取手机大小（分辨率）
- */
-internal fun getScreenPix(activity: Activity): DisplayMetrics {
-    val displaysMetrics = DisplayMetrics()
-    activity.windowManager.defaultDisplay.getMetrics(displaysMetrics)
-    return displaysMetrics
-}
-
-/**
  * dp转px
  */
 internal fun dp2px(context: Context, dpVal: Float): Int {
