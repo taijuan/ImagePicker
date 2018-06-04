@@ -4,6 +4,14 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'imagePicker'
+            keyPassword '123456'
+            storeFile file('/imagePicker.jks')
+            storePassword '123456'
+        }
+    }
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
         minSdkVersion 17
@@ -13,14 +21,17 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            zipAlignEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "com.android.support:appcompat-v7:$suport_version"
     implementation "com.android.support:recyclerview-v7:$suport_version"
     implementation("com.android.support:design:$suport_version") {
@@ -29,7 +40,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     implementation project(':library')
-    implementation "com.github.bumptech.glide:glide:4.7.1"
+    implementation 'com.github.bumptech.glide:glide:4.7.1'
     kapt "com.github.bumptech.glide:compiler:4.7.1"
-    implementation "com.github.bumptech.glide:okhttp3-integration:4.7.1"
+    implementation 'com.github.bumptech.glide:okhttp3-integration:4.7.1'
 }
