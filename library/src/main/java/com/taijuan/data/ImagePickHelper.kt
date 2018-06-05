@@ -2,7 +2,7 @@ package com.taijuan.data
 
 import com.taijuan.widget.CropImageView
 
-class PickHelper {
+internal class ImagePickHelper {
     /**
      * 选择照片限制
      */
@@ -43,6 +43,10 @@ class PickHelper {
      * 裁剪后的图片是否是矩形，否者跟随裁剪框的形状
      */
     var isSaveRectangle = false
+    /**
+     * 查询筛选条件
+     */
+    var selection: String = IMAGE_SELECTION
     /**
      * 已经选中的图片数据
      */

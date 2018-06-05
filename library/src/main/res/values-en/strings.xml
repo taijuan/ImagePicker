@@ -11,4 +11,5 @@
     <string name="picker_photo_crop">Image cropping</string>
     <string name="picker_permission_storage">Permission is disabled and local images cannot be selected</string>
     <string name="picker_permission_camera">Permission is denied to open the camera</string>
+    <string name="select">choose</string>
 </resources>

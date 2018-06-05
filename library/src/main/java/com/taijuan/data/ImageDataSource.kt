@@ -1,4 +1,4 @@
-package com.taijuan
+package com.taijuan.data
 
 import android.database.Cursor
 import android.os.Bundle
@@ -7,22 +7,24 @@ import android.support.v4.app.FragmentActivity
 import android.support.v4.app.LoaderManager
 import android.support.v4.content.CursorLoader
 import android.support.v4.content.Loader
-import com.taijuan.data.ImageFolder
-import com.taijuan.data.ImageItem
+import android.util.Log
+import com.taijuan.ImagePicker
 import com.taijuan.library.R
 import java.io.File
 
 private val IMAGE_PROJECTION = arrayOf(//查询图片需要的数据列
-        MediaStore.Images.Media.DISPLAY_NAME, //图片的显示名称  aaa.jpg
-        MediaStore.Images.Media.DATA, //图片的真实路径  /storage/emulated/0/pp/downloader/wallpaper/aaa.jpg
-        MediaStore.Images.Media.SIZE, //图片的大小，long型  132492
-        MediaStore.Images.Media.WIDTH, //图片的宽度，int型  1920
-        MediaStore.Images.Media.HEIGHT, //图片的高度，int型  1080
-        MediaStore.Images.Media.MIME_TYPE, //图片的类型     image/jpeg
-        MediaStore.Images.Media.DATE_ADDED)    //图片被添加的时间，long型  1450518608
+        MediaStore.MediaColumns.DISPLAY_NAME, //图片的显示名称  aaa.jpg
+        MediaStore.MediaColumns.DATA, //图片的真实路径  /storage/emulated/0/pp/downloader/wallpaper/aaa.jpg
+        MediaStore.MediaColumns.SIZE, //图片的大小，long型  132492
+        MediaStore.MediaColumns.WIDTH, //图片的宽度，int型  1920
+        MediaStore.MediaColumns.HEIGHT, //图片的高度，int型  1080
+        MediaStore.MediaColumns.MIME_TYPE, //图片的类型     image/jpeg
+        MediaStore.MediaColumns.DATE_ADDED)    //图片被添加的时间，long型  1450518608
+internal const val IMAGE_SELECTION = "${MediaStore.Files.FileColumns.MEDIA_TYPE} =${MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE} AND ${MediaStore.Files.FileColumns.SIZE}>0"
+internal const val VIDEO_SELECTION = "${MediaStore.Files.FileColumns.MEDIA_TYPE}=${MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO} AND ${MediaStore.Files.FileColumns.SIZE}>0"
 
 class ImageDataSource(private val activity: FragmentActivity) : LoaderManager.LoaderCallbacks<Cursor> {
-    private var loadedListener: OnImagesLoadedListener? = null                     //图片加载完成的回调接口
+    private lateinit var loadedListener: OnImagesLoadedListener                 //图片加载完成的回调接口
     private val imageFolders = arrayListOf<ImageFolder>()   //所有的图片文件夹
 
 
@@ -32,7 +34,7 @@ class ImageDataSource(private val activity: FragmentActivity) : LoaderManager.Lo
         activity.supportLoaderManager.initLoader(1, null, this)//加载所有的图片
     }
 
-    override fun onCreateLoader(id: Int, args: Bundle?) = CursorLoader(activity, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, IMAGE_PROJECTION, null, null, IMAGE_PROJECTION[6] + " DESC")
+    override fun onCreateLoader(id: Int, args: Bundle?) = CursorLoader(activity, MediaStore.Files.getContentUri("external"), IMAGE_PROJECTION, ImagePicker.pickHelper.selection, arrayOf(), IMAGE_PROJECTION[6] + " DESC")
 
     override fun onLoadFinished(loader: Loader<Cursor>, data: Cursor?) {
         imageFolders.clear()
@@ -82,13 +84,11 @@ class ImageDataSource(private val activity: FragmentActivity) : LoaderManager.Lo
                 })
             }
         }
-
-        //回调接口，通知图片数据准备完成
-        loadedListener?.onImagesLoaded(imageFolders)
+        loadedListener.onImagesLoaded(imageFolders)
     }
 
     override fun onLoaderReset(loader: Loader<Cursor>) {
-        println("--------")
+        Log.e("zuiweng", "onLoaderReset")
     }
 
     fun destroyLoader() {

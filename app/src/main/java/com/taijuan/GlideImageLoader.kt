@@ -6,11 +6,7 @@ import android.widget.ImageView
 import com.taijuan.imagepicker.R
 import java.io.File
 
-/**
- * Created by hubert
- *
- * Created on 2017/10/12.
- */
+
 class GlideImageLoader : ImageLoader {
 
     override fun displayImage(activity: Activity, path: String?, imageView: ImageView, width: Int, height: Int) {

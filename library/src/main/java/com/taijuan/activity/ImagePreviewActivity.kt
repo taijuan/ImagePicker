@@ -26,14 +26,15 @@ fun Activity.startForResultImagePreviewActivity(position: Int, data: MutableList
     val intent = Intent(this, ImagePreviewActivity::class.java)
     intent.putExtra(EXTRA_POSITION, position)
     intent.putExtra(EXTRA_IMAGE_ITEMS, arrayListOf<ImageItem>().apply { addAll(data) })
-    startActivityForResult(intent, REQUEST_PREVIEW)
+    if (data.isNotEmpty()) {
+        startActivityForResult(intent, REQUEST_PREVIEW)
+    }
 }
 
 class ImagePreviewActivity : BaseActivity(), View.OnClickListener, OnPhotoTapListener {
 
     private var current: Int = 0
     private lateinit var previewAdapter: SmallPreviewAdapter
-    private lateinit var imagePageAdapter: ImagePageAdapter
     private lateinit var data: MutableList<ImageItem>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,24 +42,11 @@ class ImagePreviewActivity : BaseActivity(), View.OnClickListener, OnPhotoTapLis
         setContentView(R.layout.activity_image_preview)
         current = intent.getIntExtra(EXTRA_POSITION, 0)
         data = intent.getSerializableExtra(EXTRA_IMAGE_ITEMS) as ArrayList<ImageItem>
-        imagePageAdapter = ImagePageAdapter(this, data).apply { setOnPhotoTapListener(this@ImagePreviewActivity) }
         previewAdapter = SmallPreviewAdapter(this, data).apply { listener = { viewpager.setCurrentItem(data.indexOf(it), false) } }
-        btn_back.setOnClickListener(this)
-        viewpager.adapter = imagePageAdapter
-        btn_ok.setOnClickListener(this)
-        bottom_bar.visibility = View.VISIBLE
-        tv_des.text = getString(R.string.picker_preview_image_count, current + 1, data.size)
-        viewpager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
-            override fun onPageSelected(position: Int) {
-                current = position
-                cb_check.isChecked = contains(data[position])
-                tv_des.text = getString(R.string.picker_preview_image_count, position + 1, data.size)
-                updatePreview()
-            }
-        })
+        rv_small.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        rv_small.adapter = previewAdapter
+        viewpager.adapter = ImagePageAdapter(this, data).apply { setOnPhotoTapListener(this@ImagePreviewActivity) }
         viewpager.currentItem = current
-        onCheckChanged()
-        cb_check.isChecked = pickHelper.selectedImages.contains(data[current])
         cb_check.setOnClickListener {
             val imageItem = data[current]
             when {
@@ -76,28 +64,28 @@ class ImagePreviewActivity : BaseActivity(), View.OnClickListener, OnPhotoTapLis
                 }
             }
             onCheckChanged()
-            updatePreview()
         }
-
-        rv_small.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        rv_small.adapter = previewAdapter
-        updatePreview()
-    }
-
-    private fun updatePreview() {
-        if (data.size > 0) {
-            rv_small.visibility = View.VISIBLE
-            val index = data.indexOf(data[current])
-            previewAdapter.current = if (index >= 0) data[index] else null
-            if (index >= 0) {
-                rv_small.scrollToPosition(index)
+        viewpager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
+            override fun onPageSelected(position: Int) {
+                current = position
+                onCheckChanged()
             }
-        } else {
-            rv_small.visibility = View.GONE
-        }
+        })
+        btn_back.setOnClickListener(this)
+        btn_ok.setOnClickListener(this)
+        onCheckChanged()
     }
 
     private fun onCheckChanged() {
+        val item = data[current]
+        cb_check.isChecked = contains(item)
+        tv_des.text = getString(R.string.picker_preview_image_count, current + 1, data.size)
+        mimeType.text = item.mimeType
+        val index = data.indexOf(item)
+        previewAdapter.current = if (index >= 0) data[index] else null
+        if (index >= 0) {
+            rv_small.scrollToPosition(index)
+        }
         val selected: Int = pickHelper.selectedImages.size
         if (selected == 0) {
             btn_ok.isEnabled = false

@@ -9,11 +9,6 @@ import com.taijuan.imagepicker.R
 import kotlinx.android.synthetic.main.item_image.view.*
 import java.io.File
 
-/**
- * Created by hubert
- *
- * Created on 2017/10/24.
- */
 class ImageAdapter(private var images: List<ImageItem> = emptyList()) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     fun updateData(images: List<ImageItem>) {

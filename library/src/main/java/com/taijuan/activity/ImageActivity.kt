@@ -13,11 +13,11 @@ import android.view.Gravity
 import android.view.View
 import android.widget.AdapterView
 import com.taijuan.EXTRA_TAKE_PHOTO
-import com.taijuan.ImageDataSource
 import com.taijuan.ImagePicker
 import com.taijuan.ImagePicker.pickHelper
 import com.taijuan.adapter.ImageFolderAdapter
 import com.taijuan.adapter.ImageRecyclerAdapter
+import com.taijuan.data.ImageDataSource
 import com.taijuan.data.ImageFolder
 import com.taijuan.data.ImageItem
 import com.taijuan.library.R
@@ -172,6 +172,10 @@ class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDataSource.
             setResult()
         } else if (requestCode == REQUEST_CROP && resultCode == Activity.RESULT_OK) {
             finish()
+        } else {
+            if (intent.getBooleanExtra(EXTRA_TAKE_PHOTO, false) && !pickHelper.isMultiMode) {
+                finish()
+            }
         }
     }
 

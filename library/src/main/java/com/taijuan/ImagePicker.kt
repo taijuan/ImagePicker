@@ -2,8 +2,10 @@ package com.taijuan
 
 import android.content.Context
 import com.taijuan.activity.startImageGridActivity
+import com.taijuan.data.IMAGE_SELECTION
 import com.taijuan.data.ImageItem
-import com.taijuan.data.PickHelper
+import com.taijuan.data.ImagePickHelper
+import com.taijuan.data.VIDEO_SELECTION
 import com.taijuan.widget.CropImageView
 import kotlin.properties.Delegates
 
@@ -17,7 +19,7 @@ object ImagePicker {
     }
 
     internal var imageLoader: ImageLoader by Delegates.notNull()
-    internal var pickHelper: PickHelper = PickHelper()
+    internal var pickHelper: ImagePickHelper = ImagePickHelper()
     internal var listener: OnPickImageResultListener? = null
 
     /**
@@ -64,11 +66,38 @@ object ImagePicker {
     }
 
     /**
-     * 是否裁剪
+     * 是否裁剪，单选生效
      */
     @JvmStatic
     fun isCrop(boolean: Boolean): ImagePicker {
         pickHelper.isCrop = boolean
+        return this
+    }
+
+    /**
+     * 只展示图片
+     */
+    @JvmStatic
+    fun imageOf(): ImagePicker {
+        pickHelper.selection = IMAGE_SELECTION
+        return this
+    }
+
+    /**
+     * 只展示视频
+     */
+    @JvmStatic
+    fun videoOf(): ImagePicker {
+        pickHelper.selection = VIDEO_SELECTION
+        return this
+    }
+
+    /**
+     * 全部展示
+     */
+    @JvmStatic
+    fun allOf(): ImagePicker {
+        pickHelper.selection = "$IMAGE_SELECTION OR $VIDEO_SELECTION"
         return this
     }
 

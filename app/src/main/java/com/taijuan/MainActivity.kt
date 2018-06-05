@@ -7,18 +7,12 @@ import com.taijuan.data.ImageItem
 import com.taijuan.imagepicker.R
 import kotlinx.android.synthetic.main.activity_main.*
 
-/**
- * Created by hubert
- * <p>
- * Created on 2017/10/31.
- * <p>
- *
- */
 class MainActivity : AppCompatActivity(), OnPickImageResultListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        ImagePicker.allOf()
         cb_crop.setOnCheckedChangeListener({ _, isChecked -> ImagePicker.isCrop(isChecked) })
         cb_multi.isChecked = true//默认是多选
         cb_multi.setOnCheckedChangeListener { _, isChecked -> ImagePicker.multiMode(isChecked) }

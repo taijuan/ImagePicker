@@ -1,6 +1,5 @@
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
@@ -27,31 +26,38 @@
 
     <include layout="@layout/include_top_bar" />
 
-    <android.support.v7.widget.LinearLayoutCompat
+    <FrameLayout
         android:id="@+id/bottom_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="#cc22292c"
-        android:orientation="vertical"
-        android:visibility="gone"
-        tools:visibility="visible">
+        android:background="#66000000">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rv_small"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:visibility="gone" />
+            android:layout_height="wrap_content"
+            android:paddingBottom="36dp" />
 
 
         <android.support.v7.widget.AppCompatCheckBox
             android:id="@+id/cb_check"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:layout_gravity="end"
+            android:layout_gravity="end|bottom"
             android:layout_marginEnd="12dp"
             android:gravity="center"
-            android:text="选择"
+            android:text="@string/select"
             android:textColor="@android:color/white" />
-    </android.support.v7.widget.LinearLayoutCompat>
+
+        <TextView
+            android:id="@+id/mimeType"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_gravity="bottom|start"
+            android:layout_marginHorizontal="12dp"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="12sp" />
+    </FrameLayout>
 </android.support.design.widget.CoordinatorLayout>

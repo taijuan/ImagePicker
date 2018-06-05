@@ -12,4 +12,6 @@
 	    implementation 'com.github.taijuan:ImagePikcer:1.0.1'
 	}
 ## 截图
-<img src="./images/screenshots-1.png" width = "50%" alt="截图-1" align=center /><img src="./images/screenshots-2.png" width = "50%" alt="截图-2" align=center />
+<img src="./images/screenshots-1.png" width = "25%" alt="图片预览" align=center /><img src="./images/screenshots-2.png" width = "25%" alt="图库主页" align=center /><img src="./images/screenshots-3.png" width = "25%" alt="图片裁剪" align=center />
+
+

@@ -12,11 +12,6 @@ import kotlinx.android.synthetic.main.item_small_preview.view.*
 import java.util.*
 import kotlin.properties.Delegates
 
-/**
- * Created by hubert
- *
- * Created on 2017/11/2.
- */
 class SmallPreviewAdapter(private val mActivity: Activity, private var images: List<ImageItem> = ArrayList()) : RecyclerView.Adapter<SmallPreviewAdapter.SmallPreviewViewHolder>() {
 
     var current: ImageItem? = null

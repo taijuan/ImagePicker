@@ -11,23 +11,10 @@ import android.provider.MediaStore
 import android.support.annotation.ColorRes
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.FileProvider
-import android.util.DisplayMetrics
 import android.util.TypedValue
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
-
-/**
- * 根据屏幕宽度与密度计算GridView显示的列数， 最少为三列，并获取Item宽度
- */
-internal fun getImageItemWidth(activity: Activity): Int {
-    val screenWidth = activity.resources.displayMetrics.widthPixels
-    val densityDpi = activity.resources.displayMetrics.densityDpi
-    var cols = screenWidth / densityDpi
-    cols = if (cols < 3) 3 else cols
-    val columnSpace = (2 * activity.resources.displayMetrics.density).toInt()
-    return (screenWidth - columnSpace * (cols - 1)) / cols
-}
 
 /**
  * 判断SDCard是否可用
@@ -48,30 +35,6 @@ internal fun dp2px(context: Context, dpVal: Float): Int {
  */
 internal fun getCropCacheFolder(context: Context): File {
     return File(context.cacheDir.toString() + "/ImagePicker/cropTemp/")
-}
-
-/**
- * 判断两个时间点在同一周里
- */
-internal fun isSameDate(date1: Date, date2: Date): Boolean {
-    val cal1 = Calendar.getInstance()
-    val cal2 = Calendar.getInstance()
-    cal1.firstDayOfWeek = Calendar.MONDAY//西方周日为一周的第一天，咱得将周一设为一周第一天
-    cal2.firstDayOfWeek = Calendar.MONDAY
-    cal1.time = date1
-    cal2.time = date2
-    val subYear = cal1.get(Calendar.YEAR) - cal2.get(Calendar.YEAR)
-    if (subYear == 0) {
-        if (cal1.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR))
-            return true
-    } else if (subYear == 1 && cal2.get(Calendar.MONTH) == 11) {
-        if (cal1.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR))
-            return true
-    } else if (subYear == -1 && cal1.get(Calendar.MONTH) == 11) {
-        if (cal1.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR))
-            return true
-    }
-    return false
 }
 
 /**

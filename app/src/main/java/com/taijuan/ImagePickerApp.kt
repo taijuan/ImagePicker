@@ -2,12 +2,7 @@ package com.taijuan
 
 import android.app.Application
 
-/**
- * Created by hubert
- *
- * Created on 2017/10/24.
- */
-class App : Application() {
+class ImagePickerApp : Application() {
 
     override fun onCreate() {
         super.onCreate()

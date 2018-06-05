@@ -61,6 +61,7 @@ class ImageRecyclerAdapter(private val activity: Activity, var images: ArrayList
             itemView.cb_check.visibility = if (pickHelper.isMultiMode) View.VISIBLE else View.GONE
             itemView.cb_check.isChecked = contains(imageItem)
             itemView.mask.visibility = if (pickHelper.isMultiMode && contains(imageItem)) View.VISIBLE else View.GONE
+            itemView.mimeType.text = imageItem.mimeType
             itemView.iv_thumb.setOnClickListener {
                 if (!pickHelper.isMultiMode) {
                     pickHelper.selectedImages.also {
