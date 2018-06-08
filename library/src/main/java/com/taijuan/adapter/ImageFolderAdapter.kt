@@ -12,7 +12,7 @@ import com.taijuan.data.ImageFolder
 import com.taijuan.library.R
 import kotlinx.android.synthetic.main.adapter_folder_list_item.view.*
 
-class ImageFolderAdapter(private val activity: Activity, private val folders: ArrayList<ImageFolder> = arrayListOf(), private val selectIndex: Int = 0) : BaseAdapter() {
+internal class ImageFolderAdapter(private val activity: Activity, private val folders: ArrayList<ImageFolder> = arrayListOf(), private val selectIndex: Int = 0) : BaseAdapter() {
 
     override fun getCount(): Int = folders.size
 

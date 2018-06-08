@@ -1,7 +1,7 @@
 package com.taijuan.data
 
 
-class ImageFolder {
+internal class ImageFolder {
     /**
      * 当前文件夹的名字
      */
@@ -11,7 +11,7 @@ class ImageFolder {
      */
     var path: String? = null
     /**
-     * 当前文件夹需要要显示的缩略图，默认为最近的一次图片
+     * 当前文件夹需要要显示的缩略图，默认为最近的一次
      */
     var cover: ImageItem? = null
     /**

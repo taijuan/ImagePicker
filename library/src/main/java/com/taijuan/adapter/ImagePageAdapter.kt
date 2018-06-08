@@ -1,6 +1,7 @@
 package com.taijuan.adapter
 
 import android.app.Activity
+import android.support.v4.util.Pools
 import android.support.v4.view.PagerAdapter
 import android.view.View
 import android.view.ViewGroup
@@ -9,18 +10,23 @@ import com.github.chrisbanes.photoview.PhotoView
 import com.taijuan.ImagePicker
 import com.taijuan.data.ImageItem
 
-class ImagePageAdapter(
+internal class ImagePageAdapter(
         private val mActivity: Activity,
-        private var images: MutableList<ImageItem> = mutableListOf()
+        private val images: MutableList<ImageItem> = mutableListOf()
 ) : PagerAdapter() {
-
+    private val pool: Pools.SynchronizedPool<PhotoView> = Pools.SynchronizedPool(5)
     private var listener: OnPhotoTapListener? = null
     fun setOnPhotoTapListener(listener: OnPhotoTapListener?) {
         this.listener = listener
     }
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        val photoView = PhotoView(mActivity)
+        var photoView = pool.acquire()
+        photoView = if (photoView == null) {
+            PhotoView(mActivity.application)
+        } else {
+            photoView
+        }
         val imageItem = images[position]
         ImagePicker.imageLoader.displayImagePreview(mActivity, imageItem.path, photoView, photoView.measuredWidth, photoView.measuredHeight)
         photoView.setOnPhotoTapListener(listener)
@@ -32,7 +38,9 @@ class ImagePageAdapter(
 
     override fun isViewFromObject(view: View, `object`: Any): Boolean = view === `object`
 
-    override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
-        container.removeView(`object` as View)
+    override fun destroyItem(container: ViewGroup, position: Int, any: Any) {
+        val photoView = any as PhotoView
+        container.removeView(photoView)
+        pool.release(photoView)
     }
 }

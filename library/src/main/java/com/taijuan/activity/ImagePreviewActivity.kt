@@ -16,13 +16,15 @@ import com.taijuan.EXTRA_POSITION
 import com.taijuan.ImagePicker.pickHelper
 import com.taijuan.adapter.ImagePageAdapter
 import com.taijuan.adapter.SmallPreviewAdapter
+import com.taijuan.loader.IMAGE_SELECTION
 import com.taijuan.data.ImageItem
+import com.taijuan.loader.VIDEO_SELECTION
 import com.taijuan.library.R
 import com.taijuan.utils.color
 import kotlinx.android.synthetic.main.activity_image_preview.*
 import kotlinx.android.synthetic.main.include_top_bar.*
 
-fun Activity.startForResultImagePreviewActivity(position: Int, data: MutableList<ImageItem> = pickHelper.selectedImages) {
+internal fun Activity.startForResultImagePreviewActivity(position: Int, data: MutableList<ImageItem> = pickHelper.selectedImages) {
     val intent = Intent(this, ImagePreviewActivity::class.java)
     intent.putExtra(EXTRA_POSITION, position)
     intent.putExtra(EXTRA_IMAGE_ITEMS, arrayListOf<ImageItem>().apply { addAll(data) })
@@ -31,7 +33,7 @@ fun Activity.startForResultImagePreviewActivity(position: Int, data: MutableList
     }
 }
 
-class ImagePreviewActivity : BaseActivity(), View.OnClickListener, OnPhotoTapListener {
+internal class ImagePreviewActivity : BaseActivity(), View.OnClickListener, OnPhotoTapListener {
 
     private var current: Int = 0
     private lateinit var previewAdapter: SmallPreviewAdapter
@@ -80,7 +82,12 @@ class ImagePreviewActivity : BaseActivity(), View.OnClickListener, OnPhotoTapLis
         val item = data[current]
         cb_check.isChecked = contains(item)
         tv_des.text = getString(R.string.picker_preview_image_count, current + 1, data.size)
-        mimeType.text = item.mimeType
+        if (pickHelper.selection == IMAGE_SELECTION || pickHelper.selection == VIDEO_SELECTION) {
+            mimeType.visibility = View.GONE
+        } else {
+            mimeType.text = item.mimeType
+            mimeType.visibility = View.VISIBLE
+        }
         val index = data.indexOf(item)
         previewAdapter.current = if (index >= 0) data[index] else null
         if (index >= 0) {

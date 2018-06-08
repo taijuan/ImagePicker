@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.item_small_preview.view.*
 import java.util.*
 import kotlin.properties.Delegates
 
-class SmallPreviewAdapter(private val mActivity: Activity, private var images: List<ImageItem> = ArrayList()) : RecyclerView.Adapter<SmallPreviewAdapter.SmallPreviewViewHolder>() {
+internal class SmallPreviewAdapter(private val mActivity: Activity, private val images: List<ImageItem> = ArrayList()) : RecyclerView.Adapter<SmallPreviewAdapter.SmallPreviewViewHolder>() {
 
     var current: ImageItem? = null
         set(value) {

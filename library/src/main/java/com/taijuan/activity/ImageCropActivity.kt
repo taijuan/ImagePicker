@@ -18,11 +18,11 @@ import kotlinx.android.synthetic.main.activity_image_crop.*
 import kotlinx.android.synthetic.main.include_top_bar.*
 import java.io.File
 
-fun Activity.startImageCropActivity() {
+internal fun Activity.startImageCropActivity() {
     startActivityForResult(Intent(this, ImageCropActivity::class.java), REQUEST_CROP)
 }
 
-class ImageCropActivity : BaseActivity(), View.OnClickListener, CropImageView.OnBitmapSaveCompleteListener {
+internal class ImageCropActivity : BaseActivity(), View.OnClickListener, CropImageView.OnBitmapSaveCompleteListener {
 
     private var mBitmap: Bitmap? = null
 
@@ -69,11 +69,15 @@ class ImageCropActivity : BaseActivity(), View.OnClickListener, CropImageView.On
         }
     }
 
-    override fun onBitmapSaveSuccess(file: File?) {
+    override fun onBitmapSaveSuccess(file: File) {
         ImagePicker.listener?.onImageResult(pickHelper.selectedImages.also {
             it.clear()
             it.add(ImageItem().apply {
-                path = file?.absolutePath
+                path = file.absolutePath
+                name = file.name
+                size = file.length()
+                mimeType = if (path?.endsWith(".png", true) == true) "image/png" else "image/jpeg"
+                addTime = System.currentTimeMillis()
             })
         })
         ImagePicker.listener = null

@@ -25,6 +25,7 @@ import android.util.TypedValue;
 import android.view.MotionEvent;
 
 import com.taijuan.library.R;
+import com.taijuan.utils.UtilsKt;
 
 import java.io.File;
 import java.io.IOException;
@@ -552,10 +553,10 @@ public class CropImageView extends AppCompatImageView {
         mSaving = true;
         final Bitmap croppedImage = getCropBitmap(expectWidth, exceptHeight, isSaveRectangle);
         Bitmap.CompressFormat outputFormat = Bitmap.CompressFormat.JPEG;
-        File saveFile = createFile(folder, "IMG_", ".jpg");
+        File saveFile = UtilsKt.createFile(folder, "IMG_", ".jpg");
         if (mStyle == CropImageView.Style.CIRCLE && !isSaveRectangle) {
             outputFormat = Bitmap.CompressFormat.PNG;
-            saveFile = createFile(folder, "IMG_", ".png");
+            saveFile = UtilsKt.createFile(folder, "IMG_", ".png");
         }
         final Bitmap.CompressFormat finalOutputFormat = outputFormat;
         final File finalSaveFile = saveFile;
@@ -567,21 +568,6 @@ public class CropImageView extends AppCompatImageView {
         }.start();
     }
 
-    /**
-     * 根据系统时间、前缀、后缀产生一个文件
-     */
-    private File createFile(File folder, String prefix, String suffix) {
-        if (!folder.exists() || !folder.isDirectory()) folder.mkdirs();
-        try {
-            File nomedia = new File(folder, ".nomedia");  //在当前文件夹底下创建一个 .nomedia 文件
-            if (!nomedia.exists()) nomedia.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.CHINA);
-        String filename = prefix + dateFormat.format(new Date(System.currentTimeMillis())) + suffix;
-        return new File(folder, filename);
-    }
 
     /**
      * 将图片保存在本地

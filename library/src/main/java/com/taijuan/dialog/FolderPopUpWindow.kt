@@ -1,4 +1,4 @@
-package com.taijuan.widget
+package com.taijuan.dialog
 
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
@@ -6,15 +6,16 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowManager
 import android.widget.AdapterView
-import android.widget.BaseAdapter
 import android.widget.PopupWindow
+import com.taijuan.adapter.ImageFolderAdapter
+import com.taijuan.data.ImageFolder
 import com.taijuan.library.R
 import com.taijuan.utils.dp2px
 import kotlinx.android.synthetic.main.pop_folder.view.*
 
-class FolderPopUpWindow(context: Context, adapter: BaseAdapter) : PopupWindow(context) {
+internal class FolderPopUpWindow(context: Context, adapter: ImageFolderAdapter) : PopupWindow(context) {
 
-    private var onItemClickListener: OnItemClickListener? = null
+    private var onItemClickListener: ((index: Int, imageFolder: ImageFolder) -> Unit)? = null
 
     init {
         width = context.resources.displayMetrics.widthPixels
@@ -28,7 +29,7 @@ class FolderPopUpWindow(context: Context, adapter: BaseAdapter) : PopupWindow(co
             contentView.listView.layoutParams.height = dp2px(context, 360f)
         }
         contentView.setOnClickListener { dismiss() }
-        contentView.listView.onItemClickListener = AdapterView.OnItemClickListener { adapterView, v, position, l -> onItemClickListener?.onItemClick(adapterView, v, position, l) }
+        contentView.listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ -> onItemClickListener?.invoke(position, adapter.getItem(position)) }
     }
 
     override fun showAtLocation(parent: View?, gravity: Int, x: Int, y: Int) {
@@ -43,15 +44,11 @@ class FolderPopUpWindow(context: Context, adapter: BaseAdapter) : PopupWindow(co
         })
     }
 
-    fun setOnItemClickListener(listener: OnItemClickListener) {
-        this.onItemClickListener = listener
+    fun setOnItemClickListener(body: (index: Int, imageFolder: ImageFolder) -> Unit) {
+        this.onItemClickListener = body
     }
 
     fun setSelection(selection: Int) {
         contentView.listView.setSelection(selection)
-    }
-
-    interface OnItemClickListener {
-        fun onItemClick(adapterView: AdapterView<*>, view: View, position: Int, l: Long)
     }
 }

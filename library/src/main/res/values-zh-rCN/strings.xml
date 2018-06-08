@@ -1,5 +1,7 @@
 <resources>
-    <string name="picker_gallery">图库</string>
+    <string name="picker_gallery">图片</string>
+    <string name="picker_video">视频</string>
+    <string name="picker_all">图片与视频</string>
     <string name="picker_all_images">全部</string>
     <string name="picker_folder_image_count">共%1$d张</string>
     <string name="picker_preview_image_count">%1$d/%2$d</string>
@@ -12,4 +14,6 @@
     <string name="picker_permission_storage">权限被禁止，无法选择本地图片</string>
     <string name="picker_permission_camera">权限被禁止，无法打开相机</string>
     <string name="select">选择</string>
+    <string name="take_picture">拍照</string>
+    <string name="record_video">录制视频</string>
 </resources>

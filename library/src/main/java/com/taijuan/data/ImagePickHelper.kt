@@ -1,5 +1,6 @@
 package com.taijuan.data
 
+import com.taijuan.loader.IMAGE_SELECTION
 import com.taijuan.widget.CropImageView
 
 internal class ImagePickHelper {

@@ -68,11 +68,41 @@ internal fun takePicture(activity: Activity, requestCode: Int): File {
 }
 
 /**
+ * 默认情况下，即不需要指定intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+ * 照相机有自己默认的存储路径，拍摄的照片将返回一个缩略图。如果想访问原始图片，
+ * 可以通过dat extra能够得到原始图片位置。即，如果指定了目标uri，data就没有数据，
+ * 如果没有指定uri，则data就返回有数据！
+ *
+ * 7.0 调用系统相机拍照不再允许使用Uri方式，应该替换为FileProvider
+ */
+internal fun takeVideo(activity: Activity, requestCode: Int): File {
+    var takeImageFile = if (existSDCard()) {
+        File(Environment.getExternalStorageDirectory(), "/DCIM/camera/")
+    } else {
+        Environment.getDataDirectory()
+    }
+    takeImageFile = createFile(takeImageFile, "IMG_", ".mp4")
+    val takePictureIntent = Intent(MediaStore.ACTION_VIDEO_CAPTURE)
+    takePictureIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+    if (takePictureIntent.resolveActivity(activity.packageManager) != null) {
+        val uri = if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+            Uri.fromFile(takeImageFile)
+        } else {
+            takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            FileProvider.getUriForFile(activity, "${activity.packageName}.provider", takeImageFile)
+        }
+        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
+        activity.startActivityForResult(takePictureIntent, requestCode)
+    }
+    return takeImageFile
+}
+
+/**
  * 根据系统时间、前缀、后缀产生一个文件
  */
-private fun createFile(folder: File, prefix: String, suffix: String): File {
+internal fun createFile(folder: File, prefix: String, suffix: String): File {
     if (!folder.exists() || !folder.isDirectory) folder.mkdirs()
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.CHINA)
     val filename = prefix + dateFormat.format(Date(System.currentTimeMillis())) + suffix
     return File(folder, filename)
 }

@@ -5,48 +5,52 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
+import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v7.widget.GridLayoutManager
+import android.util.Log
 import android.view.Gravity
 import android.view.View
-import android.widget.AdapterView
 import com.taijuan.EXTRA_TAKE_PHOTO
 import com.taijuan.ImagePicker
 import com.taijuan.ImagePicker.pickHelper
+import com.taijuan.adapter.ImageAdapter
 import com.taijuan.adapter.ImageFolderAdapter
-import com.taijuan.adapter.ImageRecyclerAdapter
-import com.taijuan.data.ImageDataSource
 import com.taijuan.data.ImageFolder
 import com.taijuan.data.ImageItem
+import com.taijuan.dialog.CameraDialog
+import com.taijuan.dialog.FolderPopUpWindow
 import com.taijuan.library.R
+import com.taijuan.loader.IMAGE_SELECTION
+import com.taijuan.loader.ImageDataSource
+import com.taijuan.loader.VIDEO_SELECTION
 import com.taijuan.utils.color
 import com.taijuan.utils.takePicture
-import com.taijuan.widget.FolderPopUpWindow
+import com.taijuan.utils.takeVideo
 import kotlinx.android.synthetic.main.activity_image_grid.*
 import kotlinx.android.synthetic.main.include_top_bar.*
 import java.io.File
 
 internal const val REQUEST_PERMISSION_STORAGE = 0x12
 internal const val REQUEST_PERMISSION_CAMERA = 0x13
-internal const val REQUEST_CAMERA = 0x23
+internal const val REQUEST_CAMERA_IMAGE = 0x23
+internal const val REQUEST_CAMERA_VIDEO = 0x24
 internal const val REQUEST_PREVIEW = 0x9
 internal const val REQUEST_CROP = 0x10
 
 /**
  * @param takePhoto 是否直接开启拍照
  */
-fun Context.startImageGridActivity(takePhoto: Boolean = false) {
+internal fun Context.startImageGridActivity(takePhoto: Boolean = false) {
     val intent = Intent(this, ImageGridActivity::class.java)
     intent.putExtra(EXTRA_TAKE_PHOTO, takePhoto)
     startActivity(intent)
 }
 
-class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDataSource.OnImagesLoadedListener, ImageRecyclerAdapter.OnImageItemClickListener {
-    private val imageDataSource = ImageDataSource(this)
-    private lateinit var adapter: ImageRecyclerAdapter
-    private lateinit var mFolderPopupWindow: FolderPopUpWindow
+internal class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDataSource.OnImagesLoadedListener, ImageAdapter.OnImageItemClickListener {
+    private val imageDataSource by lazy { ImageDataSource(this) }
+    private lateinit var adapter: ImageAdapter
     private var imageFolders: ArrayList<ImageFolder> = arrayListOf()
     private lateinit var takeImageFile: File
     private var index: Int = 0
@@ -55,6 +59,11 @@ class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDataSource.
         setContentView(R.layout.activity_image_grid)
         if (intent.getBooleanExtra(EXTRA_TAKE_PHOTO, false)) {
             onCameraClick()
+        }
+        tv_des.text = when (pickHelper.selection) {
+            IMAGE_SELECTION -> getString(R.string.picker_gallery)
+            VIDEO_SELECTION -> getString(R.string.picker_video)
+            else -> getString(R.string.picker_all)
         }
         initView()
         loadData()
@@ -80,7 +89,7 @@ class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDataSource.
         btn_preview.setOnClickListener(this)
         tv_dir.setOnClickListener(this)
         recyclerView.layoutManager = GridLayoutManager(this, 3)
-        adapter = ImageRecyclerAdapter(this)
+        adapter = ImageAdapter(this)
         recyclerView.adapter = adapter
         adapter.listener = this
         if (ImagePicker.pickHelper.isMultiMode) {
@@ -93,18 +102,16 @@ class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDataSource.
     }
 
     private fun showPopupFolderList() {
-        mFolderPopupWindow = FolderPopUpWindow(this, ImageFolderAdapter(this, imageFolders, index))
-        mFolderPopupWindow.setOnItemClickListener(object : FolderPopUpWindow.OnItemClickListener {
-            override fun onItemClick(adapterView: AdapterView<*>, view: View, position: Int, l: Long) {
-                this@ImageGridActivity.index = position
-                mFolderPopupWindow.dismiss()
-                val imageFolder = adapterView.adapter?.getItem(position) as ImageFolder
+        FolderPopUpWindow(this, ImageFolderAdapter(this, imageFolders, index)).apply {
+            setOnItemClickListener({ index, imageFolder ->
+                this@ImageGridActivity.index = index
+                dismiss()
                 adapter.refreshData(imageFolder.images)
                 tv_dir.text = imageFolder.name
-            }
-        })
-        mFolderPopupWindow.showAtLocation(window.decorView, Gravity.BOTTOM, 0, 0)
-        mFolderPopupWindow.setSelection(this.index)
+            })
+            showAtLocation(window.decorView, Gravity.BOTTOM, 0, 0)
+            setSelection(this@ImageGridActivity.index)
+        }
     }
 
     override fun onCheckChanged(selected: Int, limit: Int) {
@@ -129,7 +136,7 @@ class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDataSource.
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_PERMISSION_CAMERA)
         } else {
-            takeImageFile = takePicture(this, REQUEST_CAMERA)
+            takeCamera()
         }
     }
 
@@ -143,26 +150,43 @@ class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDataSource.
             }
         } else if (requestCode == REQUEST_PERMISSION_CAMERA) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                takeImageFile = takePicture(this, REQUEST_CAMERA)
+                takeCamera()
             } else {
                 showToast(getString(R.string.picker_permission_camera))
             }
         }
     }
 
+    private fun takeCamera() {
+        when (pickHelper.selection) {
+            IMAGE_SELECTION -> takeImageFile = takePicture(this, REQUEST_CAMERA_IMAGE)
+            VIDEO_SELECTION -> takeImageFile = takeVideo(this, REQUEST_CAMERA_VIDEO)
+            else -> CameraDialog(this) {
+                takeImageFile = when (it) {
+                    R.id.takePicture -> takePicture(this, REQUEST_CAMERA_IMAGE)
+                    else -> takeVideo(this, REQUEST_CAMERA_VIDEO)
+                }
+            }.show()
+        }
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_CAMERA && resultCode == Activity.RESULT_OK) {
-            sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE).also { it.data = Uri.fromFile(takeImageFile) })
+        if ((requestCode == REQUEST_CAMERA_IMAGE || requestCode == REQUEST_CAMERA_VIDEO) && resultCode == Activity.RESULT_OK) {
+            refreshGallery()
             val imageItem = ImageItem().apply {
                 path = takeImageFile.absolutePath
+                name = takeImageFile.name
+                size = takeImageFile.length()
+                mimeType = if (requestCode == REQUEST_CAMERA_IMAGE) "image/jpeg" else "video/mp4"
+                addTime = System.currentTimeMillis()
             }
             if (pickHelper.isMultiMode) {
                 ImagePicker.pickHelper.selectedImages.add(imageItem)
             } else {
                 ImagePicker.pickHelper.selectedImages.clear()
                 ImagePicker.pickHelper.selectedImages.add(imageItem)
-                if (ImagePicker.pickHelper.isCrop) {//需要裁剪
+                if (ImagePicker.pickHelper.isCrop && requestCode == REQUEST_CAMERA_IMAGE) {//需要裁剪
                     startImageCropActivity()
                 } else {
                     setResult()
@@ -196,15 +220,17 @@ class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDataSource.
     }
 
     override fun onImagesLoaded(imageFolders: ArrayList<ImageFolder>) {
+        Log.e("zuiweng", "imageFolders---> ${imageFolders.size}")
+        this.imageFolders.clear()
         this.imageFolders.addAll(imageFolders)
         if (this.imageFolders.isNotEmpty()) {
-            this.index = 0
-            adapter.refreshData(this.imageFolders[0].images)
+            adapter.refreshData(this.imageFolders[index].images)
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        imageDataSource.destroyLoader()
+    private fun refreshGallery() {
+        MediaScannerConnection.scanFile(this, arrayOf(takeImageFile.toString()), null) { path, _ ->
+            Log.e("zuiweng", "refreshGallery() -->$path")
+        }
     }
 }

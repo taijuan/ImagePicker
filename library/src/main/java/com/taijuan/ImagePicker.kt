@@ -2,10 +2,10 @@ package com.taijuan
 
 import android.content.Context
 import com.taijuan.activity.startImageGridActivity
-import com.taijuan.data.IMAGE_SELECTION
+import com.taijuan.loader.IMAGE_SELECTION
 import com.taijuan.data.ImageItem
 import com.taijuan.data.ImagePickHelper
-import com.taijuan.data.VIDEO_SELECTION
+import com.taijuan.loader.VIDEO_SELECTION
 import com.taijuan.widget.CropImageView
 import kotlin.properties.Delegates
 

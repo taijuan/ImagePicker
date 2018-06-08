@@ -3,7 +3,6 @@ package com.taijuan.adapter
 import android.app.Activity
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.RecyclerView.ViewHolder
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,13 +13,15 @@ import com.taijuan.activity.startForResultImagePreviewActivity
 import com.taijuan.activity.startImageCropActivity
 import com.taijuan.data.ImageItem
 import com.taijuan.library.R
+import com.taijuan.loader.IMAGE_SELECTION
+import com.taijuan.loader.VIDEO_SELECTION
 import kotlinx.android.synthetic.main.adapter_image_list_item.view.*
 import kotlin.properties.Delegates
 
 private const val ITEM_TYPE_CAMERA = 0  //第一个条目是相机
 private const val ITEM_TYPE_NORMAL = 1  //第一个条目不是相机
 
-class ImageRecyclerAdapter(private val activity: Activity, var images: ArrayList<ImageItem> = arrayListOf()) : RecyclerView.Adapter<ViewHolder>() {
+internal class ImageAdapter(private val activity: Activity, private val images: ArrayList<ImageItem> = arrayListOf()) : RecyclerView.Adapter<ViewHolder>() {
 
     internal var listener: OnImageItemClickListener by Delegates.notNull()
 
@@ -30,7 +31,8 @@ class ImageRecyclerAdapter(private val activity: Activity, var images: ArrayList
     }
 
     fun refreshData(images: ArrayList<ImageItem>) {
-        this.images = images
+        this.images.clear()
+        this.images.addAll(images)
         notifyDataSetChanged()
     }
 
@@ -61,14 +63,19 @@ class ImageRecyclerAdapter(private val activity: Activity, var images: ArrayList
             itemView.cb_check.visibility = if (pickHelper.isMultiMode) View.VISIBLE else View.GONE
             itemView.cb_check.isChecked = contains(imageItem)
             itemView.mask.visibility = if (pickHelper.isMultiMode && contains(imageItem)) View.VISIBLE else View.GONE
-            itemView.mimeType.text = imageItem.mimeType
+            if (pickHelper.selection == IMAGE_SELECTION || pickHelper.selection == VIDEO_SELECTION) {
+                itemView.mimeType.visibility = View.GONE
+            } else {
+                itemView.mimeType.text = imageItem.mimeType
+                itemView.mimeType.visibility = View.VISIBLE
+            }
             itemView.iv_thumb.setOnClickListener {
                 if (!pickHelper.isMultiMode) {
                     pickHelper.selectedImages.also {
                         it.clear()
                         it.add(imageItem)
                     }
-                    if (pickHelper.isCrop) {
+                    if (pickHelper.isCrop && imageItem.isImage()) {
                         activity.startImageCropActivity()
                     } else {
                         ImagePicker.listener?.onImageResult(pickHelper.selectedImages)
@@ -101,7 +108,7 @@ class ImageRecyclerAdapter(private val activity: Activity, var images: ArrayList
         }
 
         private fun contains(imageItem: ImageItem): Boolean {
-            return pickHelper.selectedImages.any { TextUtils.equals(it.path, imageItem.path) }
+            return pickHelper.selectedImages.any { it == imageItem }
         }
     }
 
