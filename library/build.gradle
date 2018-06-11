@@ -26,6 +26,7 @@ dependencies {
     implementation("com.android.support:design:$suport_version") {
         transitive = true
     }
+    implementation "com.android.support:exifinterface:$suport_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.github.chrisbanes:PhotoView:2.1.3'
 

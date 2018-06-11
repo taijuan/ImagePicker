@@ -19,9 +19,9 @@ package com.taijuan.loader
 import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.OnLifecycleEvent
+import android.content.Context
 import android.database.Cursor
 import android.provider.MediaStore
-import android.support.v4.app.FragmentActivity
 import android.support.v4.content.AsyncTaskLoader
 import android.support.v4.content.ContentResolverCompat
 import com.taijuan.ImagePicker
@@ -43,17 +43,18 @@ internal const val IMAGE_SELECTION = "${MediaStore.Files.FileColumns.MEDIA_TYPE}
 internal const val VIDEO_SELECTION = "${MediaStore.Files.FileColumns.MEDIA_TYPE}=${MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO} AND ${MediaStore.Files.FileColumns.SIZE}>0"
 
 
-internal class ImageDataLoader(val activity: FragmentActivity) : AsyncTaskLoader<ArrayList<ImageFolder>>(activity) {
+internal class ImageDataLoader(context: Context, lifecycle: Lifecycle) : AsyncTaskLoader<ArrayList<ImageFolder>>(context) {
 
     private val data = arrayListOf<ImageFolder>()
     private val observer by lazy { ForceLoadContentObserver() }
 
     init {
-        context.contentResolver.registerContentObserver(MediaStore.Files.getContentUri("external"), false, observer)
-        activity.lifecycle.addObserver(object : LifecycleObserver {
+        context.applicationContext.contentResolver.registerContentObserver(MediaStore.Files.getContentUri("external"), false, observer)
+        lifecycle.addObserver(object : LifecycleObserver {
             @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
             fun onDestroy() {
                 context.contentResolver.unregisterContentObserver(observer)
+                lifecycle.removeObserver(this)
             }
         })
     }
@@ -62,7 +63,7 @@ internal class ImageDataLoader(val activity: FragmentActivity) : AsyncTaskLoader
         data.clear()
         var cursor: Cursor? = null
         try {
-            cursor = ContentResolverCompat.query(activity.contentResolver, MediaStore.Files.getContentUri("external"), IMAGE_PROJECTION, ImagePicker.pickHelper.selection, arrayOf(), IMAGE_PROJECTION[6] + " DESC", null)
+            cursor = ContentResolverCompat.query(context.contentResolver, MediaStore.Files.getContentUri("external"), IMAGE_PROJECTION, ImagePicker.pickHelper.selection, arrayOf(), IMAGE_PROJECTION[6] + " DESC", null)
             if (cursor != null) {
                 val allImages = arrayListOf<ImageItem>()   //所有图片的集合,不分文件夹
                 while (cursor.moveToNext()) {

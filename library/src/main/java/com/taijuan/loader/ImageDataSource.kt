@@ -18,6 +18,7 @@ internal class ImageDataSource(private val activity: FragmentActivity) : LoaderM
             @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
             fun onDestroy() {
                 activity.supportLoaderManager.destroyLoader(1)
+                activity.lifecycle.removeObserver(this)
             }
         })
         activity.supportLoaderManager.initLoader(1, null, this)
@@ -27,7 +28,7 @@ internal class ImageDataSource(private val activity: FragmentActivity) : LoaderM
         this.loadedListener = loadedListener
     }
 
-    override fun onCreateLoader(id: Int, args: Bundle?): Loader<ArrayList<ImageFolder>> = ImageDataLoader(activity)
+    override fun onCreateLoader(id: Int, args: Bundle?): Loader<ArrayList<ImageFolder>> = ImageDataLoader(activity, activity.lifecycle)
 
     override fun onLoadFinished(loader: Loader<ArrayList<ImageFolder>>, data: ArrayList<ImageFolder>?) {
         loadedListener.onImagesLoaded(data ?: arrayListOf())

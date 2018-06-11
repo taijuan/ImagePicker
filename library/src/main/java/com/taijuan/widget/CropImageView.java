@@ -30,9 +30,6 @@ import com.taijuan.utils.UtilsKt;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 /**
  * ================================================
@@ -55,7 +52,7 @@ public class CropImageView extends AppCompatImageView {
         RECTANGLE, CIRCLE
     }
 
-    private Style[] styles = {Style.RECTANGLE, Style.CIRCLE};
+    private final Style[] styles = {Style.RECTANGLE, Style.CIRCLE};
 
     private int mMaskColor = 0xAF000000;   //暗色
     private int mBorderColor = 0xAA808080; //焦点框的边框颜色
@@ -65,9 +62,9 @@ public class CropImageView extends AppCompatImageView {
     private int mDefaultStyleIndex = 0;    //默认焦点框的形状
 
     private Style mStyle = styles[mDefaultStyleIndex];
-    private Paint mBorderPaint = new Paint();
-    private Path mFocusPath = new Path();
-    private RectF mFocusRect = new RectF();
+    private final Paint mBorderPaint = new Paint();
+    private final Path mFocusPath = new Path();
+    private final RectF mFocusRect = new RectF();
 
     /******************************** 图片缩放位移控制的参数 ************************************/
     private static final float MAX_SCALE = 4.0f;  //最大缩放比，图片缩放后的大小与中间选中区域的比值
@@ -85,11 +82,11 @@ public class CropImageView extends AppCompatImageView {
     private int mRotatedImageWidth;
     private int mRotatedImageHeight;
     private Matrix matrix = new Matrix();      //图片变换的matrix
-    private Matrix savedMatrix = new Matrix(); //开始变幻的时候，图片的matrix
-    private PointF pA = new PointF();          //第一个手指按下点的坐标
-    private PointF pB = new PointF();          //第二个手指按下点的坐标
-    private PointF midPoint = new PointF();    //两个手指的中间点
-    private PointF doubleClickPos = new PointF();  //双击图片的时候，双击点的坐标
+    private final Matrix savedMatrix = new Matrix(); //开始变幻的时候，图片的matrix
+    private final PointF pA = new PointF();          //第一个手指按下点的坐标
+    private final PointF pB = new PointF();          //第二个手指按下点的坐标
+    private final PointF midPoint = new PointF();    //两个手指的中间点
+    private final PointF doubleClickPos = new PointF();  //双击图片的时候，双击点的坐标
     private PointF mFocusMidPoint = new PointF();  //中间View的中间点
     private int mode = NONE;            //初始的模式
     private long doubleClickTime = 0;   //第二次双击的时间
@@ -99,7 +96,7 @@ public class CropImageView extends AppCompatImageView {
     private float mMaxScale = MAX_SCALE;//程序根据不同图片的大小，动态得到的最大缩放比
     private boolean isInited = false;   //是否经过了 onSizeChanged 初始化
     private boolean mSaving = false;    //是否正在保存
-    private static Handler mHandler = new InnerHandler();
+    private static final Handler mHandler = new InnerHandler();
 
     public CropImageView(Context context) {
         this(context, null);
@@ -289,44 +286,48 @@ public class CropImageView extends AppCompatImageView {
                         else mode = ZOOM;
                     }
                 }
-                if (mode == DRAG) {
-                    matrix.set(savedMatrix);
-                    matrix.postTranslate(event.getX() - pA.x, event.getY() - pA.y);
-                    fixTranslation();
-                    setImageMatrix(matrix);
-                } else if (mode == ZOOM) {
-                    float newDist = spacing(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
-                    if (newDist > 10f) {
+                switch (mode) {
+                    case DRAG:
                         matrix.set(savedMatrix);
-                        // 这里之所以用 maxPostScale 矫正一下，主要是防止缩放到最大时，继续缩放图片会产生位移
-                        float tScale = Math.min(newDist / oldDist, maxPostScale());
-                        if (tScale != 0) {
-                            matrix.postScale(tScale, tScale, midPoint.x, midPoint.y);
-                            fixScale();
-                            fixTranslation();
+                        matrix.postTranslate(event.getX() - pA.x, event.getY() - pA.y);
+                        fixTranslation();
+                        setImageMatrix(matrix);
+                        break;
+                    case ZOOM:
+                        float newDist = spacing(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                        if (newDist > 10f) {
+                            matrix.set(savedMatrix);
+                            // 这里之所以用 maxPostScale 矫正一下，主要是防止缩放到最大时，继续缩放图片会产生位移
+                            float tScale = Math.min(newDist / oldDist, maxPostScale());
+                            if (tScale != 0) {
+                                matrix.postScale(tScale, tScale, midPoint.x, midPoint.y);
+                                fixScale();
+                                fixTranslation();
+                                setImageMatrix(matrix);
+                            }
+                        }
+                        break;
+                    case ROTATE:
+                        PointF pC = new PointF(event.getX(1) - event.getX(0) + pA.x, event.getY(1) - event.getY(0) + pA.y);
+                        double a = spacing(pB.x, pB.y, pC.x, pC.y);
+                        double b = spacing(pA.x, pA.y, pC.x, pC.y);
+                        double c = spacing(pA.x, pA.y, pB.x, pB.y);
+                        if (b > 10) {
+                            double cosA = (b * b + c * c - a * a) / (2 * b * c);
+                            double angleA = Math.acos(cosA);
+                            double ta = pB.y - pA.y;
+                            double tb = pA.x - pB.x;
+                            double tc = pB.x * pA.y - pA.x * pB.y;
+                            double td = ta * pC.x + tb * pC.y + tc;
+                            if (td > 0) {
+                                angleA = 2 * Math.PI - angleA;
+                            }
+                            rotation = angleA;
+                            matrix.set(savedMatrix);
+                            matrix.postRotate((float) (rotation * 180 / Math.PI), midPoint.x, midPoint.y);
                             setImageMatrix(matrix);
                         }
-                    }
-                } else if (mode == ROTATE) {
-                    PointF pC = new PointF(event.getX(1) - event.getX(0) + pA.x, event.getY(1) - event.getY(0) + pA.y);
-                    double a = spacing(pB.x, pB.y, pC.x, pC.y);
-                    double b = spacing(pA.x, pA.y, pC.x, pC.y);
-                    double c = spacing(pA.x, pA.y, pB.x, pB.y);
-                    if (b > 10) {
-                        double cosA = (b * b + c * c - a * a) / (2 * b * c);
-                        double angleA = Math.acos(cosA);
-                        double ta = pB.y - pA.y;
-                        double tb = pA.x - pB.x;
-                        double tc = pB.x * pA.y - pA.x * pB.y;
-                        double td = ta * pC.x + tb * pC.y + tc;
-                        if (td > 0) {
-                            angleA = 2 * Math.PI - angleA;
-                        }
-                        rotation = angleA;
-                        matrix.set(savedMatrix);
-                        matrix.postRotate((float) (rotation * 180 / Math.PI), midPoint.x, midPoint.y);
-                        setImageMatrix(matrix);
-                    }
+                        break;
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -456,7 +457,7 @@ public class CropImageView extends AppCompatImageView {
      * @param isSaveRectangle 是否按矩形区域保存图片
      * @return 裁剪后的Bitmap
      */
-    public Bitmap getCropBitmap(int expectWidth, int exceptHeight, boolean isSaveRectangle) {
+    private Bitmap getCropBitmap(int expectWidth, int exceptHeight, boolean isSaveRectangle) {
         if (expectWidth <= 0 || exceptHeight < 0) return null;
         Bitmap srcBitmap = ((BitmapDrawable) getDrawable()).getBitmap();
         srcBitmap = rotate(srcBitmap, sumRotateLevel * 90);  //最好用level，因为角度可能不是90的整数
@@ -595,7 +596,7 @@ public class CropImageView extends AppCompatImageView {
     }
 
     private static class InnerHandler extends Handler {
-        public InnerHandler() {
+        InnerHandler() {
             super(Looper.getMainLooper());
         }
 

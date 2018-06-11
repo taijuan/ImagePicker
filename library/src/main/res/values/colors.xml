@@ -5,7 +5,6 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorControlActivated">#FF4081</color>
     <color name="colorControlNormal">#303F9F</color>
-    <color name="ip_color_primary_trans">#ec2f3335</color>
     <color name="ip_color_press">#ffe0e0e0</color>
     <color name="ip_camera_pre">#353535</color>
     <color name="ip_color_accent">#1AAD19</color>
