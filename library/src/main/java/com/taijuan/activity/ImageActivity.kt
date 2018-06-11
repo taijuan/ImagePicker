@@ -54,6 +54,7 @@ internal class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDa
     private var imageFolders: ArrayList<ImageFolder> = arrayListOf()
     private lateinit var takeImageFile: File
     private var index: Int = 0
+    private val oldSelectedImages = pickHelper.selectedImages.toList()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_grid)
@@ -214,7 +215,7 @@ internal class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDa
             tv_dir -> showPopupFolderList()
             btn_ok -> setResult()
             btn_preview -> startForResultImagePreviewActivity(0)
-            btn_back -> finish()
+            btn_back -> onBackPressed()
 
         }
     }
@@ -232,5 +233,11 @@ internal class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDa
         MediaScannerConnection.scanFile(this, arrayOf(takeImageFile.toString()), null) { path, _ ->
             Log.e("zuiweng", "refreshGallery() -->$path")
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        pickHelper.selectedImages.clear()
+        pickHelper.selectedImages.addAll(oldSelectedImages)
     }
 }
