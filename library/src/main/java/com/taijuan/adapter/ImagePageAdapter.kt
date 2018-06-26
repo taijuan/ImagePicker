@@ -22,11 +22,7 @@ internal class ImagePageAdapter(
 
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         var photoView = pool.acquire()
-        photoView = if (photoView == null) {
-            PhotoView(mActivity.application)
-        } else {
-            photoView
-        }
+        photoView = photoView ?: PhotoView(mActivity.application)
         val imageItem = images[position]
         ImagePicker.imageLoader.displayImagePreview(mActivity, imageItem.path, photoView, photoView.measuredWidth, photoView.measuredHeight)
         photoView.setOnPhotoTapListener(listener)
