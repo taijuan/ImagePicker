@@ -1,5 +1,6 @@
 package com.taijuan
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
@@ -13,7 +14,7 @@ class MainActivity : AppCompatActivity(), OnPickImageResultListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         ImagePicker.allOf()
-        cb_crop.setOnCheckedChangeListener({ _, isChecked -> ImagePicker.isCrop(isChecked) })
+        cb_crop.setOnCheckedChangeListener { _, isChecked -> ImagePicker.isCrop(isChecked) }
         cb_multi.isChecked = true//默认是多选
         cb_multi.setOnCheckedChangeListener { _, isChecked -> ImagePicker.multiMode(isChecked) }
         btn_pick.setOnClickListener {
@@ -24,9 +25,11 @@ class MainActivity : AppCompatActivity(), OnPickImageResultListener {
             //直接打开相机
             ImagePicker.camera(this@MainActivity, this@MainActivity)
         }
+        btn_swipe.setOnClickListener {
+            startActivity(Intent(this, SwipeDemoActivity::class.java))
+        }
         recycler_view.layoutManager = GridLayoutManager(this, 3)
-        val imageAdapter = ImageAdapter()
-        recycler_view.adapter = imageAdapter
+        recycler_view.adapter = ImageAdapter()
     }
 
     override fun onImageResult(imageItems: MutableList<ImageItem>) {

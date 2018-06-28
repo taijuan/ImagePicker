@@ -38,8 +38,9 @@ dependencies {
         transitive = true
     }
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
-    implementation project(':library')
+    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
+    implementation project(':picker')
+    implementation project(':swipeMenu')
     implementation 'com.github.bumptech.glide:glide:4.7.1'
     kapt "com.github.bumptech.glide:compiler:4.7.1"
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.7.1'
