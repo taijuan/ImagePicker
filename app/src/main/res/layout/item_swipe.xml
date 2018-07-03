@@ -8,15 +8,14 @@
         android:id="@+id/num"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#f00"
+        android:background="@drawable/selector_bg"
         android:gravity="center_vertical"
         android:padding="16dp" />
 
-    <TextView
+    <Button
         android:id="@+id/test"
         android:layout_width="80dp"
         android:layout_height="match_parent"
-        android:background="#999999"
         android:gravity="center"
         android:text="测试" />
 </android.support.v7.widget.LinearLayoutCompat>

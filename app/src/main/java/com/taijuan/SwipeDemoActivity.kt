@@ -12,9 +12,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import com.taijuan.imagepicker.R
-import com.taijuan.swipemenu.ItemCallbackPlus
-import com.taijuan.swipemenu.ItemTouchHelperPlus
-import com.taijuan.swipemenu.SwipeListener
+import com.taijuan.swipemenu.ItemSwipeCallbackPlus
+import com.taijuan.swipemenu.ItemSwipeTouchHelperPlus
+import com.taijuan.swipemenu.ItemSwipeListener
 import kotlinx.android.synthetic.main.activity_swipe_demo.*
 import kotlinx.android.synthetic.main.item_swipe.view.*
 
@@ -23,7 +23,7 @@ class SwipeDemoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_swipe_demo)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        ItemTouchHelperPlus(ItemCallbackPlus()).attachToRecyclerView(recyclerView)
+        ItemSwipeTouchHelperPlus(ItemSwipeCallbackPlus()).attachToRecyclerView(recyclerView)
         recyclerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL).apply {
             setDrawable(ColorDrawable(Color.parseColor("#f05555")).apply {
                 setBounds(0, 0, 3, 3)
@@ -31,7 +31,7 @@ class SwipeDemoActivity : AppCompatActivity() {
         })
         recyclerView.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             override fun onCreateViewHolder(p0: ViewGroup, p1: Int): RecyclerView.ViewHolder {
-                return object : RecyclerView.ViewHolder(LayoutInflater.from(p0.context).inflate(R.layout.item_swipe, p0, false)), SwipeListener {
+                return object : RecyclerView.ViewHolder(LayoutInflater.from(p0.context).inflate(R.layout.item_swipe, p0, false)), ItemSwipeListener {
                     init {
                         itemView.test.setOnClickListener {
                             Toast.makeText(it.context, "测试", Toast.LENGTH_SHORT).show()

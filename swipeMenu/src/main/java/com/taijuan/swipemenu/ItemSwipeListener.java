@@ -2,7 +2,7 @@ package com.taijuan.swipemenu;
 
 import android.view.View;
 
-public interface SwipeListener {
+public interface ItemSwipeListener {
 
     float getSwipeWidth();
 

@@ -5,20 +5,15 @@ import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.util.Log
 
-
-/**
- * Created by WANG on 18/3/14.
- */
-
-class ItemCallbackPlus : ItemTouchHelperPlus.Callback() {
+class ItemSwipeCallbackPlus : ItemSwipeTouchHelperPlus.Callback() {
 
     override fun isItemViewSwipeEnabled(): Boolean {
         return true
     }
 
     override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-        return if (viewHolder is SwipeListener) {
-            ItemTouchHelperPlus.Callback.makeMovementFlags(0, ItemTouchHelper.START)
+        return if (viewHolder is ItemSwipeListener) {
+            ItemSwipeTouchHelperPlus.Callback.makeMovementFlags(0, ItemTouchHelper.START)
         } else {
             super.getAbsoluteMovementFlags(recyclerView, viewHolder)
         }
@@ -31,7 +26,7 @@ class ItemCallbackPlus : ItemTouchHelperPlus.Callback() {
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
 
     override fun onChildDraw(c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
-        if (viewHolder is SwipeListener) {
+        if (viewHolder is ItemSwipeListener) {
             val actionWidth = viewHolder.swipeWidth
             Log.e("zuiweng", dX.toString())
             Log.e("zuiweng", actionWidth.toString())
@@ -42,11 +37,11 @@ class ItemCallbackPlus : ItemTouchHelperPlus.Callback() {
             } else {
                 dX
             }
-            (viewHolder as SwipeListener).onSwipe(dx)
+            (viewHolder as ItemSwipeListener).onSwipe(dx)
         }
     }
 
     override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder?): Float {
-        return if (viewHolder is SwipeListener) .5f else super.getSwipeThreshold(viewHolder)
+        return if (viewHolder is ItemSwipeListener) .5f else super.getSwipeThreshold(viewHolder)
     }
 }

@@ -13,7 +13,6 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchUIUtil;
-import android.util.Log;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -31,7 +30,7 @@ import java.util.List;
  * Created by WANG on 2018/4/27.
  */
 
-public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements RecyclerView.OnChildAttachStateChangeListener {
+public class ItemSwipeTouchHelperPlus extends RecyclerView.ItemDecoration implements RecyclerView.OnChildAttachStateChangeListener {
 
     /**
      * Up direction, used for swipe & drag control.
@@ -68,7 +67,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
     public static final int END = RIGHT << 2;
 
     /**
-     * ItemTouchHelperPlus is in idle state. At this state, either there is no related motion event by
+     * ItemSwipeTouchHelperPlus is in idle state. At this state, either there is no related motion event by
      * the user or latest motion events have not yet triggered a swipe or drag.
      */
     public static final int ACTION_STATE_IDLE = 0;
@@ -98,11 +97,6 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
      * Animation type for views that were dragged and now will animate to their final position.
      */
     public static final int ANIMATION_TYPE_DRAG = 1 << 3;
-
-    static final String TAG = "ItemTouchHelperPlus";
-
-    static final boolean DEBUG = false;
-
     static final int ACTIVE_POINTER_ID_NONE = -1;
 
     static final int DIRECTION_FLAG_COUNT = 8;
@@ -149,12 +143,12 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
     float mInitialTouchY;
 
     /**
-     * Set when ItemTouchHelperPlus is assigned to a RecyclerView.
+     * Set when ItemSwipeTouchHelperPlus is assigned to a RecyclerView.
      */
     float mSwipeEscapeVelocity;
 
     /**
-     * Set when ItemTouchHelperPlus is assigned to a RecyclerView.
+     * Set when ItemSwipeTouchHelperPlus is assigned to a RecyclerView.
      */
     float mMaxSwipeVelocity;
 
@@ -180,7 +174,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
     int mActivePointerId = ACTIVE_POINTER_ID_NONE;
 
     /**
-     * Developer callback which controls the behavior of ItemTouchHelperPlus.
+     * Developer callback which controls the behavior of ItemSwipeTouchHelperPlus.
      */
     Callback mCallback;
 
@@ -261,10 +255,6 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
      */
     private boolean closePreItem = false;
 
-    /**
-     * Whether the current entry has been clicked
-     */
-    private boolean mClick;
 
     float mLastX = 0;
 
@@ -272,53 +262,45 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
     private final RecyclerView.OnItemTouchListener mOnItemTouchListener = new RecyclerView.OnItemTouchListener() {
         @Override
         public boolean onInterceptTouchEvent(RecyclerView recyclerView, MotionEvent event) {
-            if (DEBUG) {
-                Log.d(TAG, "intercept: x:" + event.getX() + ",y:" + event.getY() + ", " + event);
-            }
             final int action = event.getActionMasked();
             if (action == MotionEvent.ACTION_DOWN) {
-                mClick = true;
                 mLastX = event.getX();
                 mActivePointerId = event.getPointerId(0);
                 mInitialTouchX = event.getX();
                 mInitialTouchY = event.getY();
                 obtainVelocityTracker();
                 if (mSelected == null) {
-                    final RecoverAnimation animation = findAnimation(event);
-                    if (animation != null) {
-                        //这里是当item侧滑已经展开的时候.如果animation不为null 说明Item的侧滑是展开的状态  需要进行关闭
-                        mInitialTouchX -= animation.mX;
-                        mInitialTouchY -= animation.mY;
-                        endRecoverAnimation(animation.mViewHolder, true);
-                        if (mPendingCleanup.remove(animation.mViewHolder.itemView)) {
-                            mCallback.clearView(mRecyclerView, animation.mViewHolder);
-                        }
-                        select(animation.mViewHolder, animation.mActionState);
-                        updateDxDy(event, mSelectedFlags, 0);
+                    if (null != mPreOpened) {
+                        closePreItem = true;
+                        closeOpenedPreItem(mPreOpened);
+                        return (mPreOpened instanceof ItemSwipeListener) && isInBoundsClickable(event.getRawX(), event.getRawY(), ((ItemSwipeListener) mPreOpened).getSwipeView());
                     } else {
-                        if (null != mPreOpened) {
-                            closePreItem = true;
-                            closeOpenedPreItem(mPreOpened);
-                            return true;
+                        final RecoverAnimation animation = findAnimation(event);
+                        if (animation != null) {
+                            //这里是当item侧滑已经展开的时候.如果animation不为null 说明Item的侧滑是展开的状态  需要进行关闭
+                            mInitialTouchX -= animation.mX;
+                            mInitialTouchY -= animation.mY;
+                            endRecoverAnimation(animation.mViewHolder, true);
+                            if (mPendingCleanup.remove(animation.mViewHolder.itemView)) {
+                                mCallback.clearView(mRecyclerView, animation.mViewHolder);
+                            }
+                            select(animation.mViewHolder, animation.mActionState);
+                            updateDxDy(event, mSelectedFlags, 0);
+                        } else {
+                            if (null != mPreOpened) {
+                                closePreItem = true;
+                                closeOpenedPreItem(mPreOpened);
+                                return true;
+                            }
                         }
                     }
                 }
             } else if (action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
                 closePreItem = false;
-                //这边是新增的
-                if (mClick && action == MotionEvent.ACTION_UP) {
-                    doChildClickEvent(event.getRawX(), event.getRawY());
-                }
-                mClick = false;
                 mActivePointerId = ACTIVE_POINTER_ID_NONE;
                 select(null, ACTION_STATE_IDLE);
             } else if (mActivePointerId != ACTIVE_POINTER_ID_NONE && !closePreItem) {
-                // in a non scroll orientation, if distance change is above threshold, we
-                // can select the item
                 final int index = event.findPointerIndex(mActivePointerId);
-                if (DEBUG) {
-                    Log.d(TAG, "pointer index " + index);
-                }
                 if (index >= 0) {
                     checkSelectForSwipe(action, event, index);
                 }
@@ -330,56 +312,17 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
         }
 
         /**
-         * 判断当前点击的位置是否为view并且该View实现了OnClickListener事件
-         * @param x
-         * @param y
-         */
-        private void doChildClickEvent(float x, float y) {
-            if (mSelected == null) return;
-            View consumeEventView = mSelected.itemView;
-            if (consumeEventView instanceof ViewGroup) {
-                consumeEventView = findConsumeView((ViewGroup) consumeEventView, x, y);
-            }
-            if (consumeEventView != null) {
-                consumeEventView.performClick();
-            }
-        }
-
-        /**
-         * 查找view
-         * @param parent 父容器
-         * @param x  点击事件的x坐标
-         * @param y  点击事件的y坐标
-         * @return
-         */
-        private View findConsumeView(ViewGroup parent, float x, float y) {
-            for (int i = 0; i < parent.getChildCount(); i++) {
-                View child = parent.getChildAt(i);
-                if (child instanceof ViewGroup && child.getVisibility() == View.VISIBLE) {
-                    View view = findConsumeView((ViewGroup) child, x, y);
-                    if (view != null) {
-                        return view;
-                    }
-                } else {
-                    if (isInBoundsClickable((int) x, (int) y, child)) return child;
-                }
-            }
-            if (isInBoundsClickable((int) x, (int) y, parent)) return parent;
-            return null;
-        }
-
-        /**
          * 边界判断
          * @param x
          * @param y
          * @param child 再点击事件下找到的view
          * @return
          */
-        private boolean isInBoundsClickable(int x, int y, View child) {
+        private boolean isInBoundsClickable(float x, float y, View child) {
             int[] location = new int[2];
             child.getLocationOnScreen(location);
             Rect rect = new Rect(location[0], location[1], location[0] + child.getWidth(), location[1] + child.getHeight());
-            if (rect.contains(x, y) && ViewCompat.hasOnClickListeners(child)
+            if (rect.contains((int) x, (int) y) && ViewCompat.hasOnClickListeners(child)
                     && child.getVisibility() == View.VISIBLE) {
                 return true;
             }
@@ -407,7 +350,6 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
                 case MotionEvent.ACTION_MOVE: {
                     // Find the index of the active pointer and fetch its position
                     if (activePointerIndex >= 0) {
-                        if (Math.abs(event.getX() - mLastX) > mSlop) mClick = false;
                         mLastX = event.getX();
                         updateDxDy(event, mSelectedFlags, activePointerIndex);
                         moveIfNecessary(viewHolder);
@@ -423,16 +365,10 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
                     }
                     // fall through
                 case MotionEvent.ACTION_UP:
-
-                    if (mClick) {
-                        doChildClickEvent(event.getRawX(), event.getRawY());
-                    }
-                    mClick = false;
                     select(null, ACTION_STATE_IDLE);
                     mActivePointerId = ACTIVE_POINTER_ID_NONE;
                     break;
                 case MotionEvent.ACTION_POINTER_UP: {
-                    mClick = false;
                     final int pointerIndex = event.getActionIndex();
                     final int pointerId = event.getPointerId(pointerIndex);
                     if (pointerId == mActivePointerId) {
@@ -445,7 +381,6 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
                     break;
                 }
                 default:
-                    mClick = false;
                     break;
             }
         }
@@ -471,15 +406,15 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
     private long mDragScrollStartTimeInMs;
 
     /**
-     * Creates an ItemTouchHelperPlus that will work with the given Callback.
+     * Creates an ItemSwipeTouchHelperPlus that will work with the given Callback.
      * <p>
-     * You can attach ItemTouchHelperPlus to a RecyclerView via
+     * You can attach ItemSwipeTouchHelperPlus to a RecyclerView via
      * {@link #attachToRecyclerView(RecyclerView)}. Upon attaching, it will add an item decoration,
      * an onItemTouchListener and a Child attach / detach listener to the RecyclerView.
      *
      * @param callback The Callback which controls the behavior of this touch helper.
      */
-    public ItemTouchHelperPlus(Callback callback) {
+    public ItemSwipeTouchHelperPlus(Callback callback) {
         mCallback = callback;
     }
 
@@ -491,12 +426,12 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
     }
 
     /**
-     * Attaches the ItemTouchHelperPlus to the provided RecyclerView. If TouchHelper is already
+     * Attaches the ItemSwipeTouchHelperPlus to the provided RecyclerView. If TouchHelper is already
      * attached to a RecyclerView, it will first detach from the previous one. You can call this
      * method with {@code null} to detach it from the current RecyclerView.
      *
      * @param recyclerView The RecyclerView instance to which you want to add this helper or
-     *                     {@code null} if you want to remove ItemTouchHelperPlus from the current
+     *                     {@code null} if you want to remove ItemSwipeTouchHelperPlus from the current
      *                     RecyclerView.
      */
     public void attachToRecyclerView(@Nullable RecyclerView recyclerView) {
@@ -565,8 +500,8 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
         if (viewHolder == null) {
             return null;
         }
-        if (viewHolder instanceof SwipeListener) {
-            return ((SwipeListener) viewHolder).getSwipeView();
+        if (viewHolder instanceof ItemSwipeListener) {
+            return ((ItemSwipeListener) viewHolder).getSwipeView();
         }
         return viewHolder.itemView;
     }
@@ -635,8 +570,8 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
     }
 
     private float getSwipeWidth() {
-        if (mSelected instanceof SwipeListener) {
-            return ((SwipeListener) mSelected).getSwipeWidth();
+        if (mSelected instanceof ItemSwipeListener) {
+            return ((ItemSwipeListener) mSelected).getSwipeWidth();
         }
         return mRecyclerView.getWidth();
     }
@@ -1224,8 +1159,8 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
                 }
             }
             int width = mRecyclerView.getWidth();
-            if (viewHolder instanceof SwipeListener) {
-                SwipeListener extension = (SwipeListener) viewHolder;
+            if (viewHolder instanceof ItemSwipeListener) {
+                ItemSwipeListener extension = (ItemSwipeListener) viewHolder;
                 width = (int) extension.getSwipeWidth();
             }
             final float threshold = width * mCallback.getSwipeThreshold(viewHolder);
@@ -1301,12 +1236,12 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
 
     /**
      * An interface which can be implemented by LayoutManager for better integration with
-     * {@link ItemTouchHelperPlus}.
+     * {@link ItemSwipeTouchHelperPlus}.
      */
     public interface ViewDropHandler {
 
         /**
-         * Called by the {@link ItemTouchHelperPlus} after a View is dropped over another View.
+         * Called by the {@link ItemSwipeTouchHelperPlus} after a View is dropped over another View.
          * <p>
          * A LayoutManager should implement this interface to get ready for the upcoming move
          * operation.
@@ -1328,7 +1263,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
     }
 
     /**
-     * This class is the contract between ItemTouchHelperPlus and your application. It lets you control
+     * This class is the contract between ItemSwipeTouchHelperPlus and your application. It lets you control
      * which touch behaviors are enabled per each ViewHolder and also receive callbacks when user
      * performs these actions.
      * <p>
@@ -1338,7 +1273,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
      * {@link #UP}, {@link #DOWN}). You can use
      * {@link #makeMovementFlags(int, int)} to easily construct it. Alternatively, you can use
      * <p>
-     * If user drags an item, ItemTouchHelperPlus will call
+     * If user drags an item, ItemSwipeTouchHelperPlus will call
      * {@link Callback#onMove(RecyclerView, RecyclerView.ViewHolder, RecyclerView.ViewHolder)
      * onMove(recyclerView, dragged, target)}.
      * Upon receiving this callback, you should move the item from the old position
@@ -1352,7 +1287,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
      * {@link #chooseDropTarget(RecyclerView.ViewHolder, List, int, int)} to select a
      * custom drop target.
      * <p>
-     * When a View is swiped, ItemTouchHelperPlus animates it until it goes out of bounds, then calls
+     * When a View is swiped, ItemSwipeTouchHelperPlus animates it until it goes out of bounds, then calls
      * {@link #onSwiped(RecyclerView.ViewHolder, int)}. At this point, you should update your
      * adapter (e.g. remove the item) and call related Adapter#notify event.
      */
@@ -1397,9 +1332,9 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
 
         static {
             if (Build.VERSION.SDK_INT >= 21) {
-                sUICallback = new com.taijuan.swipemenu.ItemTouchUIUtilImpl.Lollipop();
+                sUICallback = new com.taijuan.swipemenu.ItemSwipeTouchUIUtilImpl.Lollipop();
             } else {
-                sUICallback = new com.taijuan.swipemenu.ItemTouchUIUtilImpl.Honeycomb();
+                sUICallback = new com.taijuan.swipemenu.ItemSwipeTouchUIUtilImpl.Honeycomb();
             }
         }
 
@@ -1519,7 +1454,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
          * This flag is composed of 3 sets of 8 bits, where first 8 bits are for IDLE state, next
          * 8 bits are for SWIPE state and third 8 bits are for DRAG state.
          * Each 8 bit sections can be constructed by simply OR'ing direction flags defined in
-         * {@link ItemTouchHelperPlus}.
+         * {@link ItemSwipeTouchHelperPlus}.
          * <p>
          * For example, if you want it to allow swiping LEFT and RIGHT but only allow starting to
          * swipe by swiping RIGHT, you can return:
@@ -1529,7 +1464,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
          * This means, allow right movement while IDLE and allow right and left movement while
          * swiping.
          *
-         * @param recyclerView The RecyclerView to which ItemTouchHelperPlus is attached.
+         * @param recyclerView The RecyclerView to which ItemSwipeTouchHelperPlus is attached.
          * @param viewHolder   The ViewHolder for which the movement information is necessary.
          * @return flags specifying which movements are allowed on this ViewHolder.
          * @see #makeMovementFlags(int, int)
@@ -1591,7 +1526,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
          * <p>
          * Default implementation returns true.
          *
-         * @param recyclerView The RecyclerView to which ItemTouchHelperPlus is attached to.
+         * @param recyclerView The RecyclerView to which ItemSwipeTouchHelperPlus is attached to.
          * @param current      The ViewHolder that user is dragging.
          * @param target       The ViewHolder which is below the dragged ViewHolder.
          * @return True if the dragged ViewHolder can be replaced with the target ViewHolder, false
@@ -1603,17 +1538,17 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
         }
 
         /**
-         * Called when ItemTouchHelperPlus wants to move the dragged item from its old position to
+         * Called when ItemSwipeTouchHelperPlus wants to move the dragged item from its old position to
          * the new position.
          * <p>
-         * If this method returns true, ItemTouchHelperPlus assumes {@code viewHolder} has been moved
+         * If this method returns true, ItemSwipeTouchHelperPlus assumes {@code viewHolder} has been moved
          * to the adapter position of {@code target} ViewHolder
          * ({@link RecyclerView.ViewHolder#getAdapterPosition()
          * ViewHolder#getAdapterPosition()}).
          * <p>
          * If you don't support drag & drop, this method will never be called.
          *
-         * @param recyclerView The RecyclerView to which ItemTouchHelperPlus is attached to.
+         * @param recyclerView The RecyclerView to which ItemSwipeTouchHelperPlus is attached to.
          * @param viewHolder   The ViewHolder which is being dragged by the user.
          * @param target       The ViewHolder over which the currently active item is being
          *                     dragged.
@@ -1625,13 +1560,13 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
 
 
         /**
-         * Returns whether ItemTouchHelperPlus should start a swipe operation if a pointer is swiped
+         * Returns whether ItemSwipeTouchHelperPlus should start a swipe operation if a pointer is swiped
          * over the View.
          * <p>
          * Default value returns true but you may want to disable this if you want to start
          * swiping on a custom view touch using .
          *
-         * @return True if ItemTouchHelperPlus should start swiping an item when user swipes a pointer
+         * @return True if ItemSwipeTouchHelperPlus should start swiping an item when user swipes a pointer
          * over the View, false otherwise. Default value is <code>true</code>.
          */
         public boolean isItemViewSwipeEnabled() {
@@ -1639,7 +1574,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
         }
 
         /**
-         * When finding views under a dragged view, by default, ItemTouchHelperPlus searches for views
+         * When finding views under a dragged view, by default, ItemSwipeTouchHelperPlus searches for views
          * that overlap with the dragged View. By overriding this method, you can extend or shrink
          * the search box.
          *
@@ -1666,7 +1601,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
 
         /**
          * Returns the fraction that the user should move the View to be considered as it is
-         * dragged. After a view is moved this amount, ItemTouchHelperPlus starts checking for Views
+         * dragged. After a view is moved this amount, ItemSwipeTouchHelperPlus starts checking for Views
          * below it for a possible drop.
          *
          * @param viewHolder The ViewHolder that is being dragged.
@@ -1681,7 +1616,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
          * Defines the minimum velocity which will be considered as a swipe action by the user.
          * <p>
          * You can increase this value to make it harder to swipe or decrease it to make it easier.
-         * Keep in mind that ItemTouchHelperPlus also checks the perpendicular velocity and makes sure
+         * Keep in mind that ItemSwipeTouchHelperPlus also checks the perpendicular velocity and makes sure
          * current direction velocity is larger then the perpendicular one. Otherwise, user's
          * movement is ambiguous. You can change the threshold by overriding
          * {@link #getSwipeVelocityThreshold(float)}.
@@ -1692,7 +1627,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
          * multiplier.
          *
          * @param defaultValue The default value (in pixels per second) used by the
-         *                     ItemTouchHelperPlus.
+         *                     ItemSwipeTouchHelperPlus.
          * @return The minimum swipe velocity. The default implementation returns the
          * <code>defaultValue</code> parameter.
          * @see #getSwipeVelocityThreshold(float)
@@ -1703,9 +1638,9 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
         }
 
         /**
-         * Defines the maximum velocity ItemTouchHelperPlus will ever calculate for pointer movements.
+         * Defines the maximum velocity ItemSwipeTouchHelperPlus will ever calculate for pointer movements.
          * <p>
-         * To consider a movement as swipe, ItemTouchHelperPlus requires it to be larger than the
+         * To consider a movement as swipe, ItemSwipeTouchHelperPlus requires it to be larger than the
          * perpendicular movement. If both directions reach to the max threshold, none of them will
          * be considered as a swipe because it is usually an indication that user rather tried to
          * scroll then swipe.
@@ -1716,7 +1651,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
          * will be easier for the user to swipe diagonally and if you decrease the value, user will
          * need to make a rather straight finger movement to trigger a swipe.
          *
-         * @param defaultValue The default value(in pixels per second) used by the ItemTouchHelperPlus.
+         * @param defaultValue The default value(in pixels per second) used by the ItemSwipeTouchHelperPlus.
          * @return The velocity cap for pointer movements. The default implementation returns the
          * <code>defaultValue</code> parameter.
          * @see #getSwipeEscapeVelocity(float)
@@ -1726,7 +1661,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
         }
 
         /**
-         * Called by ItemTouchHelperPlus to select a drop target from the list of ViewHolders that
+         * Called by ItemSwipeTouchHelperPlus to select a drop target from the list of ViewHolders that
          * are under the dragged View.
          * <p>
          * Default implementation filters the View with which dragged item have changed position
@@ -1816,9 +1751,9 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
          * <p>
          * If you don't support swiping, this method will never be called.
          * <p>
-         * ItemTouchHelperPlus will keep a reference to the View until it is detached from
+         * ItemSwipeTouchHelperPlus will keep a reference to the View until it is detached from
          * RecyclerView.
-         * As soon as it is detached, ItemTouchHelperPlus will call
+         * As soon as it is detached, ItemSwipeTouchHelperPlus will call
          * {@link #clearView(RecyclerView, RecyclerView.ViewHolder)}.
          *
          * @param viewHolder The ViewHolder which has been swiped by the user.
@@ -1834,15 +1769,15 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
         public abstract void onSwiped(RecyclerView.ViewHolder viewHolder, int direction);
 
         /**
-         * Called when the ViewHolder swiped or dragged by the ItemTouchHelperPlus is changed.
+         * Called when the ViewHolder swiped or dragged by the ItemSwipeTouchHelperPlus is changed.
          * <p/>
          * If you override this method, you should call super.
          *
          * @param viewHolder  The new ViewHolder that is being swiped or dragged. Might be null if
          *                    it is cleared.
-         * @param actionState One of {@link ItemTouchHelperPlus#ACTION_STATE_IDLE},
-         *                    {@link ItemTouchHelperPlus#ACTION_STATE_SWIPE} or
-         *                    {@link ItemTouchHelperPlus#ACTION_STATE_DRAG}.
+         * @param actionState One of {@link ItemSwipeTouchHelperPlus#ACTION_STATE_IDLE},
+         *                    {@link ItemSwipeTouchHelperPlus#ACTION_STATE_SWIPE} or
+         *                    {@link ItemSwipeTouchHelperPlus#ACTION_STATE_DRAG}.
          * @see #clearView(RecyclerView, RecyclerView.ViewHolder)
          */
         public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
@@ -1861,7 +1796,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
         /**
          * Called when {@link #onMove(RecyclerView, RecyclerView.ViewHolder, RecyclerView.ViewHolder)} returns true.
          * <p>
-         * ItemTouchHelperPlus does not create an extra Bitmap or View while dragging, instead, it
+         * ItemSwipeTouchHelperPlus does not create an extra Bitmap or View while dragging, instead, it
          * modifies the existing View. Because of this reason, it is important that the View is
          * still part of the layout after it is moved. This may not work as intended when swapped
          * Views are close to RecyclerView bounds or there are gaps between them (e.g. other Views
@@ -1878,7 +1813,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
          * removed by the LayoutManager if the move causes the View to go out of bounds. In that
          * case, drag will end prematurely.
          *
-         * @param recyclerView The RecyclerView controlled by the ItemTouchHelperPlus.
+         * @param recyclerView The RecyclerView controlled by the ItemSwipeTouchHelperPlus.
          * @param viewHolder   The ViewHolder under user's control.
          * @param fromPos      The previous adapter position of the dragged item (before it was
          *                     moved).
@@ -1973,7 +1908,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
         }
 
         /**
-         * Called by the ItemTouchHelperPlus when the user interaction with an element is over and it
+         * Called by the ItemSwipeTouchHelperPlus when the user interaction with an element is over and it
          * also completed its animation.
          * <p>
          * This is a good place to clear all changes on the View that was done in
@@ -1982,7 +1917,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
          * boolean)} or
          * {@link #onChildDrawOver(Canvas, RecyclerView, RecyclerView.ViewHolder, float, float, int, boolean)}.
          *
-         * @param recyclerView The RecyclerView which is controlled by the ItemTouchHelperPlus.
+         * @param recyclerView The RecyclerView which is controlled by the ItemSwipeTouchHelperPlus.
          * @param viewHolder   The View that was interacted by the user.
          */
         public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
@@ -1990,21 +1925,21 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
         }
 
         /**
-         * Called by ItemTouchHelperPlus on RecyclerView's onDraw callback.
+         * Called by ItemSwipeTouchHelperPlus on RecyclerView's onDraw callback.
          * <p>
          * If you would like to customize how your View's respond to user interactions, this is
          * a good place to override.
          * <p>
          * Default implementation translates the child by the given <code>dX</code>,
          * <code>dY</code>.
-         * ItemTouchHelperPlus also takes care of drawing the child after other children if it is being
+         * ItemSwipeTouchHelperPlus also takes care of drawing the child after other children if it is being
          * dragged. This is done using child re-ordering mechanism. On platforms prior to L, this
          * is
          * achieved via {@link ViewGroup#getChildDrawingOrder(int, int)} and on L
          * and after, it changes View's elevation value to be greater than all other children.)
          *
          * @param c                 The canvas which RecyclerView is drawing its children
-         * @param recyclerView      The RecyclerView to which ItemTouchHelperPlus is attached to
+         * @param recyclerView      The RecyclerView to which ItemSwipeTouchHelperPlus is attached to
          * @param viewHolder        The ViewHolder which is being interacted by the User or it was
          *                          interacted and simply animating to its original position
          * @param dX                The amount of horizontal displacement caused by user's action
@@ -2024,21 +1959,21 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
         }
 
         /**
-         * Called by ItemTouchHelperPlus on RecyclerView's onDraw callback.
+         * Called by ItemSwipeTouchHelperPlus on RecyclerView's onDraw callback.
          * <p>
          * If you would like to customize how your View's respond to user interactions, this is
          * a good place to override.
          * <p>
          * Default implementation translates the child by the given <code>dX</code>,
          * <code>dY</code>.
-         * ItemTouchHelperPlus also takes care of drawing the child after other children if it is being
+         * ItemSwipeTouchHelperPlus also takes care of drawing the child after other children if it is being
          * dragged. This is done using child re-ordering mechanism. On platforms prior to L, this
          * is
          * achieved via {@link ViewGroup#getChildDrawingOrder(int, int)} and on L
          * and after, it changes View's elevation value to be greater than all other children.)
          *
          * @param c                 The canvas which RecyclerView is drawing its children
-         * @param recyclerView      The RecyclerView to which ItemTouchHelperPlus is attached to
+         * @param recyclerView      The RecyclerView to which ItemSwipeTouchHelperPlus is attached to
          * @param viewHolder        The ViewHolder which is being interacted by the User or it was
          *                          interacted and simply animating to its original position
          * @param dX                The amount of horizontal displacement caused by user's action
@@ -2058,7 +1993,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
         }
 
         /**
-         * Called by the ItemTouchHelperPlus when user action finished on a ViewHolder and now the View
+         * Called by the ItemSwipeTouchHelperPlus when user action finished on a ViewHolder and now the View
          * will be animated to its final position.
          * <p>
          * Default implementation uses ItemAnimator's duration values. If
@@ -2069,7 +2004,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
          * {@code DEFAULT_DRAG_ANIMATION_DURATION} or {@code DEFAULT_SWIPE_ANIMATION_DURATION}
          * depending on the animation type.
          *
-         * @param recyclerView  The RecyclerView to which the ItemTouchHelperPlus is attached to.
+         * @param recyclerView  The RecyclerView to which the ItemSwipeTouchHelperPlus is attached to.
          * @param animationType The type of animation. Is one of {@link #ANIMATION_TYPE_DRAG},
          *                      {@link #ANIMATION_TYPE_SWIPE_CANCEL} or
          *                      {@link #ANIMATION_TYPE_SWIPE_SUCCESS}.
@@ -2090,7 +2025,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
         }
 
         /**
-         * Called by the ItemTouchHelperPlus when user is dragging a view out of bounds.
+         * Called by the ItemSwipeTouchHelperPlus when user is dragging a view out of bounds.
          * <p>
          * You can override this method to decide how much RecyclerView should scroll in response
          * to this action. Default implementation calculates a value based on the amount of View
@@ -2098,7 +2033,7 @@ public class ItemTouchHelperPlus extends RecyclerView.ItemDecoration implements 
          * the faster the list will scroll. Similarly, the larger portion of the View is out of
          * bounds, the faster the RecyclerView will scroll.
          *
-         * @param recyclerView        The RecyclerView instance to which ItemTouchHelperPlus is
+         * @param recyclerView        The RecyclerView instance to which ItemSwipeTouchHelperPlus is
          *                            attached to.
          * @param viewSize            The total size of the View in scroll direction, excluding
          *                            item decorations.

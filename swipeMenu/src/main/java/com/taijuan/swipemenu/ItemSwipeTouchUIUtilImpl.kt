@@ -22,7 +22,7 @@ import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchUIUtil
 import android.view.View
 
-internal class ItemTouchUIUtilImpl {
+internal class ItemSwipeTouchUIUtilImpl {
     internal class Lollipop : Honeycomb() {
         override fun onDraw(c: Canvas, recyclerView: RecyclerView, view: View, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
             if (isCurrentlyActive) {
