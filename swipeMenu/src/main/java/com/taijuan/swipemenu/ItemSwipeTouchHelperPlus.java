@@ -253,8 +253,6 @@ public class ItemSwipeTouchHelperPlus extends RecyclerView.ItemDecoration implem
     /**
      * Is the last open item closed
      */
-    private boolean closePreItem = false;
-
 
     float mLastX = 0;
 
@@ -271,9 +269,11 @@ public class ItemSwipeTouchHelperPlus extends RecyclerView.ItemDecoration implem
                 obtainVelocityTracker();
                 if (mSelected == null) {
                     if (null != mPreOpened) {
-                        closePreItem = true;
+                        if ((mPreOpened instanceof ItemSwipeListener) && isInBoundsClickable(event.getRawX(), event.getRawY(), ((ItemSwipeListener) mPreOpened).getSwipeView())) {
+                            return false;
+                        }
                         closeOpenedPreItem(mPreOpened);
-                        return (mPreOpened instanceof ItemSwipeListener) && isInBoundsClickable(event.getRawX(), event.getRawY(), ((ItemSwipeListener) mPreOpened).getSwipeView());
+                        return true;
                     } else {
                         final RecoverAnimation animation = findAnimation(event);
                         if (animation != null) {
@@ -286,20 +286,17 @@ public class ItemSwipeTouchHelperPlus extends RecyclerView.ItemDecoration implem
                             }
                             select(animation.mViewHolder, animation.mActionState);
                             updateDxDy(event, mSelectedFlags, 0);
-                        } else {
-                            if (null != mPreOpened) {
-                                closePreItem = true;
-                                closeOpenedPreItem(mPreOpened);
-                                return true;
-                            }
                         }
                     }
                 }
             } else if (action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
-                closePreItem = false;
                 mActivePointerId = ACTIVE_POINTER_ID_NONE;
                 select(null, ACTION_STATE_IDLE);
-            } else if (mActivePointerId != ACTIVE_POINTER_ID_NONE && !closePreItem) {
+                if (mPreOpened != null && (mPreOpened instanceof ItemSwipeListener) && isInBoundsClickable(event.getRawX(), event.getRawY(), ((ItemSwipeListener) mPreOpened).getSwipeView())) {
+                    closeOpenedPreItem(mPreOpened);
+                    return true;
+                }
+            } else if (mActivePointerId != ACTIVE_POINTER_ID_NONE) {
                 final int index = event.findPointerIndex(mActivePointerId);
                 if (index >= 0) {
                     checkSelectForSwipe(action, event, index);
@@ -809,8 +806,8 @@ public class ItemSwipeTouchHelperPlus extends RecyclerView.ItemDecoration implem
 
     private List<RecyclerView.ViewHolder> findSwapTargets(RecyclerView.ViewHolder viewHolder) {
         if (mSwapTargets == null) {
-            mSwapTargets = new ArrayList<RecyclerView.ViewHolder>();
-            mDistances = new ArrayList<Integer>();
+            mSwapTargets = new ArrayList<>();
+            mDistances = new ArrayList<>();
         } else {
             mSwapTargets.clear();
             mDistances.clear();

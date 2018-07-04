@@ -28,8 +28,6 @@ class ItemSwipeCallbackPlus : ItemSwipeTouchHelperPlus.Callback() {
     override fun onChildDraw(c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
         if (viewHolder is ItemSwipeListener) {
             val actionWidth = viewHolder.swipeWidth
-            Log.e("zuiweng", dX.toString())
-            Log.e("zuiweng", actionWidth.toString())
             val dx = if (dX > 0 && dX > actionWidth) {
                 actionWidth
             } else if (dX < 0 && -dX > actionWidth) {
