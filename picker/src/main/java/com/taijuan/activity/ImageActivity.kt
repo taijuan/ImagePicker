@@ -9,12 +9,10 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.media.MediaScannerConnection
 import android.os.Bundle
-import android.support.v4.app.ActivityCompat
-import android.support.v7.widget.DividerItemDecoration
-import android.support.v7.widget.GridLayoutManager
 import android.util.Log
 import android.view.Gravity
 import android.view.View
+import androidx.core.app.ActivityCompat
 import com.taijuan.EXTRA_TAKE_PHOTO
 import com.taijuan.ImagePicker
 import com.taijuan.ImagePicker.pickHelper
@@ -93,14 +91,14 @@ internal class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDa
         btn_back.setOnClickListener(this)
         btn_preview.setOnClickListener(this)
         tv_dir.setOnClickListener(this)
-        recyclerView.layoutManager = GridLayoutManager(this, 3)
-        recyclerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL).apply {
+        recyclerView.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 3)
+        recyclerView.addItemDecoration(androidx.recyclerview.widget.DividerItemDecoration(this, androidx.recyclerview.widget.DividerItemDecoration.VERTICAL).apply {
             setDrawable(ColorDrawable(Color.TRANSPARENT).apply {
                 setBounds(0, 0, dp2px(this@ImageGridActivity, 8f), dp2px(this@ImageGridActivity, 8f))
             })
         })
 
-        recyclerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.HORIZONTAL).apply {
+        recyclerView.addItemDecoration(androidx.recyclerview.widget.DividerItemDecoration(this, androidx.recyclerview.widget.DividerItemDecoration.HORIZONTAL).apply {
             setDrawable(ColorDrawable(Color.TRANSPARENT).apply {
                 setBounds(0, 0, dp2px(this@ImageGridActivity, 8f), dp2px(this@ImageGridActivity, 8f))
             })
@@ -119,12 +117,12 @@ internal class ImageGridActivity : BaseActivity(), View.OnClickListener, ImageDa
 
     private fun showPopupFolderList() {
         FolderPopUpWindow(this, ImageFolderAdapter(this, imageFolders, index)).apply {
-            setOnItemClickListener({ index, imageFolder ->
+            setOnItemClickListener { index, imageFolder ->
                 this@ImageGridActivity.index = index
                 dismiss()
                 adapter.refreshData(imageFolder.images)
                 tv_dir.text = imageFolder.name
-            })
+            }
             showAtLocation(window.decorView, Gravity.BOTTOM, 0, 0)
             setSelection(this@ImageGridActivity.index)
         }

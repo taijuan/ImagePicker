@@ -1,9 +1,7 @@
 package com.taijuan
 
-import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.GridLayoutManager
+import androidx.appcompat.app.AppCompatActivity
 import com.taijuan.data.ImageItem
 import com.taijuan.imagepicker.R
 import kotlinx.android.synthetic.main.activity_main.*
@@ -25,10 +23,7 @@ class MainActivity : AppCompatActivity(), OnPickImageResultListener {
             //直接打开相机
             ImagePicker.camera(this@MainActivity, this@MainActivity)
         }
-        btn_swipe.setOnClickListener {
-            startActivity(Intent(this, SwipeDemoActivity::class.java))
-        }
-        recycler_view.layoutManager = GridLayoutManager(this, 3)
+        recycler_view.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 3)
         recycler_view.adapter = ImageAdapter()
     }
 

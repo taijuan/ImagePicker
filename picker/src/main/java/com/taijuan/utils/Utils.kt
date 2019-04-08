@@ -7,11 +7,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
-import android.support.annotation.ColorRes
-import android.support.media.ExifInterface
-import android.support.v4.content.ContextCompat
-import android.support.v4.content.FileProvider
 import android.util.TypedValue
+import androidx.annotation.ColorRes
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.exifinterface.media.ExifInterface
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -117,12 +117,12 @@ fun getBitmapDegree(path: String?): Int {
     var degree = 0
     if (path != null) {
         try {
-            val exifInterface = ExifInterface(path)
-            val orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+            val exifInterface = androidx.exifinterface.media.ExifInterface(path)
+            val orientation = exifInterface.getAttributeInt(androidx.exifinterface.media.ExifInterface.TAG_ORIENTATION, androidx.exifinterface.media.ExifInterface.ORIENTATION_NORMAL)
             when (orientation) {
-                ExifInterface.ORIENTATION_ROTATE_90 -> degree = 90
-                ExifInterface.ORIENTATION_ROTATE_180 -> degree = 180
-                ExifInterface.ORIENTATION_ROTATE_270 -> degree = 270
+                androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90 -> degree = 90
+                androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_180 -> degree = 180
+                androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_270 -> degree = 270
             }
         } catch (e: Exception) {
             e.printStackTrace()

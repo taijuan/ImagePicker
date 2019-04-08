@@ -10,7 +10,7 @@ import android.widget.TextView
 import com.taijuan.ImagePicker
 import com.taijuan.data.ImageFolder
 import com.taijuan.picker.R
-import com.taijuan.picker.R.string.*
+import com.taijuan.picker.R.string.picker_folder_image_count
 import kotlinx.android.synthetic.main.adapter_folder_list_item.view.*
 
 internal class ImageFolderAdapter(private val activity: Activity, private val folders: ArrayList<ImageFolder> = arrayListOf(), private val selectIndex: Int = 0) : BaseAdapter() {

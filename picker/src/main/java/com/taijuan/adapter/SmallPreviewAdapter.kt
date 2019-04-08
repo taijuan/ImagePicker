@@ -1,7 +1,6 @@
 package com.taijuan.adapter
 
 import android.app.Activity
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +11,7 @@ import kotlinx.android.synthetic.main.item_small_preview.view.*
 import java.util.*
 import kotlin.properties.Delegates
 
-internal class SmallPreviewAdapter(private val mActivity: Activity, private val images: List<ImageItem> = ArrayList()) : RecyclerView.Adapter<SmallPreviewAdapter.SmallPreviewViewHolder>() {
+internal class SmallPreviewAdapter(private val mActivity: Activity, private val images: List<ImageItem> = ArrayList()) : androidx.recyclerview.widget.RecyclerView.Adapter<SmallPreviewAdapter.SmallPreviewViewHolder>() {
 
     var current: ImageItem? = null
         set(value) {
@@ -34,7 +33,7 @@ internal class SmallPreviewAdapter(private val mActivity: Activity, private val 
 
     override fun getItemId(position: Int): Long = position.toLong()
 
-    inner class SmallPreviewViewHolder(parent: ViewGroup) : RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_small_preview, parent, false)) {
+    inner class SmallPreviewViewHolder(parent: ViewGroup) : androidx.recyclerview.widget.RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_small_preview, parent, false)) {
         private var data: ImageItem by Delegates.notNull()
 
         init {

@@ -1,11 +1,10 @@
 package com.taijuan.widget
 
 import android.content.Context
-import android.support.v4.view.ViewPager
 import android.util.AttributeSet
 import android.view.MotionEvent
 
-class PhotoViewPager: ViewPager {
+class PhotoViewPager : androidx.viewpager.widget.ViewPager {
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
 

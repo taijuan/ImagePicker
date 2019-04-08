@@ -16,14 +16,13 @@
 
 package com.taijuan.loader
 
-import android.arch.lifecycle.Lifecycle
-import android.arch.lifecycle.LifecycleObserver
-import android.arch.lifecycle.OnLifecycleEvent
 import android.content.Context
 import android.database.Cursor
 import android.provider.MediaStore
-import android.support.v4.content.AsyncTaskLoader
-import android.support.v4.content.ContentResolverCompat
+import androidx.core.content.ContentResolverCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 import com.taijuan.ImagePicker
 import com.taijuan.data.ImageFolder
 import com.taijuan.data.ImageItem
@@ -43,7 +42,7 @@ internal const val IMAGE_SELECTION = "${MediaStore.Files.FileColumns.MEDIA_TYPE}
 internal const val VIDEO_SELECTION = "${MediaStore.Files.FileColumns.MEDIA_TYPE}=${MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO} AND ${MediaStore.Files.FileColumns.SIZE}>0"
 
 
-internal class ImageDataLoader(context: Context, lifecycle: Lifecycle) : AsyncTaskLoader<ArrayList<ImageFolder>>(context) {
+internal class ImageDataLoader(context: Context, lifecycle: Lifecycle) : androidx.loader.content.AsyncTaskLoader<ArrayList<ImageFolder>>(context) {
 
     private val data = arrayListOf<ImageFolder>()
     private val observer by lazy { ForceLoadContentObserver() }

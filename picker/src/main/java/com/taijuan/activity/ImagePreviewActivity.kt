@@ -3,13 +3,12 @@ package com.taijuan.activity
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.support.v4.view.ViewPager
-import android.support.v7.widget.LinearLayoutManager
 import android.text.TextUtils
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.chrisbanes.photoview.OnPhotoTapListener
 import com.taijuan.EXTRA_IMAGE_ITEMS
 import com.taijuan.EXTRA_POSITION
@@ -45,7 +44,7 @@ internal class ImagePreviewActivity : BaseActivity(), View.OnClickListener, OnPh
         current = intent.getIntExtra(EXTRA_POSITION, 0)
         data = intent.getSerializableExtra(EXTRA_IMAGE_ITEMS) as ArrayList<ImageItem>
         previewAdapter = SmallPreviewAdapter(this, data).apply { listener = { viewpager.setCurrentItem(data.indexOf(it), false) } }
-        rv_small.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        rv_small.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false)
         rv_small.adapter = previewAdapter
         viewpager.adapter = ImagePageAdapter(this, data).apply { setOnPhotoTapListener(this@ImagePreviewActivity) }
         viewpager.currentItem = current
@@ -67,7 +66,7 @@ internal class ImagePreviewActivity : BaseActivity(), View.OnClickListener, OnPh
             }
             onCheckChanged()
         }
-        viewpager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
+        viewpager.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.SimpleOnPageChangeListener() {
             override fun onPageSelected(position: Int) {
                 current = position
                 onCheckChanged()

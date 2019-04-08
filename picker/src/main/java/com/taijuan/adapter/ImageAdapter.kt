@@ -1,12 +1,11 @@
 package com.taijuan.adapter
 
 import android.app.Activity
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.RecyclerView.ViewHolder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.taijuan.ImagePicker
 import com.taijuan.ImagePicker.pickHelper
 import com.taijuan.activity.startForResultImagePreviewActivity
@@ -21,7 +20,7 @@ import kotlin.properties.Delegates
 private const val ITEM_TYPE_CAMERA = 0  //第一个条目是相机
 private const val ITEM_TYPE_NORMAL = 1  //第一个条目不是相机
 
-internal class ImageAdapter(private val activity: Activity, private val images: ArrayList<ImageItem> = arrayListOf()) : RecyclerView.Adapter<ViewHolder>() {
+internal class ImageAdapter(private val activity: Activity, private val images: ArrayList<ImageItem> = arrayListOf()) : androidx.recyclerview.widget.RecyclerView.Adapter<ViewHolder>() {
 
     internal var listener: OnImageItemClickListener by Delegates.notNull()
 

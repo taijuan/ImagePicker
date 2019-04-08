@@ -1,7 +1,7 @@
 package com.taijuan.activity
 
-import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 
 internal open class BaseActivity : AppCompatActivity() {
     fun showToast(charSequence: CharSequence) {
