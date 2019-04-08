@@ -1,4 +1,4 @@
-# androidJitPack[![](https://www.jitpack.io/v/taijuan/androidJitpack.svg)](https://www.jitpack.io/#taijuan/androidJitpack)
+# androidJitPack[![](https://jitpack.io/v/taijuan/ImagePicker.svg)](https://jitpack.io/#taijuan/ImagePicker)
 
 ## 集成
 #### 1. 添加maven:
@@ -9,8 +9,6 @@
 	}
 #### 2. module添加引用
 	dependencies {
-	    侧滑删除
-	    implementation 'com.github.taijuan.androidJitpack:swipeMenu:1.0.5'
 	    图片视频选择
         implementation 'com.github.taijuan.androidJitpack:picker:1.0.5'
 	}
